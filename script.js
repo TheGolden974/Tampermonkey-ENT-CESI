@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ENT CESI - Visual Redesign
 // @namespace    http://tampermonkey.net/
-// @version      20.0
+// @version      21.0
 // @description  Interface modernisée pour l'ENT CESI : données réelles (profil, EDT, notifications, accès directs) récupérées depuis l'ENT.
 // @author       You
 // @match        https://ent.cesi.fr/*
@@ -203,6 +203,7 @@
        3. TABLEAU DE BORD (ent.cesi.fr/accueil-apprenant)
        ===================================================================== */
     if (!(host.includes('ent.cesi.fr') && path.includes('/accueil-apprenant'))) return;
+
 
     document.documentElement.classList.add('cesi-loading');
     addStyle('html.cesi-loading body { visibility: hidden !important; }');
@@ -449,7 +450,7 @@
             return days.map((day) => {
                 const courses = groups[day].slice().sort((a, b) => a.startD - b.startD);
                 const tag = day === today ? '<span class="day-tag">AUJOURD\'HUI</span>'
-                          : day === tomorrow ? '<span class="day-tag soft">DEMAIN</span>' : '';
+                    : day === tomorrow ? '<span class="day-tag soft">DEMAIN</span>' : '';
                 const items = courses.map((c) => {
                     const live = now >= c.startD && now < c.endD;
                     const done = now >= c.endD;
