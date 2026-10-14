@@ -8,6 +8,8 @@
 // @match        https://sts.viacesi.fr/*
 // @run-at       document-start
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js
+// @downloadURL  https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js
 // ==/UserScript==
 
 (function () {
