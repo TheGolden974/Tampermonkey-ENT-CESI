@@ -95,9 +95,9 @@ Ce guide s'adresse à tout apprenant ou étudiant CESI souhaitant installer l'ex
 ### Étape 3 (Alternative) : Installation manuelle
 Si vous préférez créer le script manuellement :
 1. Cliquez sur l'icône **Tampermonkey** dans la barre d'outils de votre navigateur, puis sur **« Tableau de bord »**.
-2. Cliquez sur l'onglet **« + »** (Ajouter un nouveau script).
-3. Supprimez le modèle pré-rempli et collez l'intégralité du code disponible dans [`script.js`](https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js).
-4. Cliquez sur **Fichier** > **Enregistrer** (ou `Ctrl + S`).
+2. Allez dans l'onglet **« Utilitaires »** (en haut à droite).
+3. Dans la section « Importer depuis une URL », collez ce lien : [https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js](https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js).
+4. Cliquez sur **Installer**.
 
 ---
 
