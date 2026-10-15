@@ -6,10 +6,6 @@ __pycache__/
 
 # Scripts et données de test locaux
 test-cesi.py
+generate_screenshots.py
 tests/
-screenshots/
-old/
-
-# Fichier de travail userscript dupliqué (seul script.js est suivi)
-cesi.user.js
 
