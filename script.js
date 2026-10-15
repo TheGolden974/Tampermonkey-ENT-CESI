@@ -120,10 +120,11 @@
 
     // Repli si les accès directs ne sont pas trouvés sur la page
     const FALLBACK_ACCESS = [
-        { href: "https://ent.cesi.fr/travaux-de-fin-detudes", title: "Travaux de fin d'études", icon: "school" },
         { href: "https://ent.cesi.fr/actualites", title: "Actualités", icon: "news" },
-        { href: "https://ent.cesi.fr/infos-pratiques", title: "Infos pratiques", icon: "info" },
         { href: "https://ent.cesi.fr/ressources-numeriques", title: "Ressources numériques", icon: "book" },
+        { href: "https://ent.cesi.fr/recherche-travaux-fin-detudes", title: "Travaux fin d'études", icon: "school" },
+        { href: "https://ent.cesi.fr/infos-pratiques-pau-orbigny", title: "Infos pratiques", icon: "info" },
+        { href: "https://moodle.cesi.fr/", title: "Moodle CESI", icon: "school" },
         { href: "http://support.viacesi.info", title: "Support CESI", icon: "support" },
         { href: "https://www.office.com", title: "Microsoft 365", icon: "apps" }
     ];
@@ -495,42 +496,87 @@
     function handleEntPortal() {
         addFont();
         addClass('cesi-loading');
-    addStyle('html.cesi-loading body { visibility: hidden !important; }');
-    setTimeout(() => removeClass('cesi-loading'), 4000);
+        addStyle('html.cesi-loading body { visibility: hidden !important; }');
+        setTimeout(() => removeClass('cesi-loading'), 4000);
 
-    addStyle(`
-        :root {
-            --c-bg: #f4f5f7; --c-card: #ffffff; --c-ink: #0f172a; --c-text: #334155; --c-muted: #64748b;
-            --c-line: #e2e8f0; --c-line-strong: #cbd5e1; --c-soft: #f8fafc;
-            --c-accent: #FBE216; --c-accent-dark: #ebd10f; --c-accent-ink: #857000; --c-accent-soft: #fffbeb;
-            --c-danger: #dc2626; --radius: 14px;
-            --shadow-sm: 0 1px 3px rgba(15,23,42,.05); --shadow-md: 0 8px 24px rgba(15,23,42,.08);
-        }
-        html, body {
-            background: var(--c-bg) !important; margin: 0 !important; padding: 0 !important;
-            width: 100% !important; height: auto !important; min-height: 100% !important;
-            overflow-x: hidden !important; overflow-y: auto !important; position: relative !important;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif !important; color: var(--c-ink) !important;
-            -webkit-font-smoothing: antialiased;
-        }
-        #cesi-app { display: flex; flex-direction: column; min-height: 100vh; background: var(--c-bg); }
-        #cesi-app, #cesi-app * { box-sizing: border-box; }
-        #cesi-app a { text-decoration: none; color: inherit; }
-        #cesi-app h1, #cesi-app h2, #cesi-app h3, #cesi-app h4, #cesi-app h5, #cesi-app p { margin: 0; padding: 0; font-family: inherit; }
-        #cesi-app button { font-family: inherit; }
-        #cesi-app svg { fill: currentColor; flex-shrink: 0; }
+        const THEME_KEY = 'cesi_theme';
+        const isDark = () => {
+            const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem('scn-theme');
+            return saved ? saved === 'dark' : true;
+        };
+        const applyTheme = (dark) => {
+            const el = document.documentElement;
+            if (el) {
+                el.classList.toggle('dark', dark);
+                el.classList.toggle('scn-dark', dark);
+            }
+            try {
+                localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+                localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+            } catch { /* ignore */ }
+        };
+        applyTheme(isDark());
+        document.addEventListener('DOMContentLoaded', () => applyTheme(isDark()), { once: true });
 
-        #cesi-topbar-wrap { position: sticky; top: 0; z-index: 50; background: rgba(244,245,247,.82); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid rgba(203,213,225,.55); }
-        #cesi-topbar { max-width: 1240px; margin: 0 auto; padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-        #cesi-header-logo { height: 52px; width: auto; display: block; object-fit: contain; border: 0 !important; outline: 0 !important; box-shadow: none !important; background: none !important; border-radius: 0 !important; padding: 0 !important; margin: 0 !important; }
-        .cesi-user-actions { display: flex; align-items: center; gap: 12px; }
+        addStyle(`
+            :root {
+                --c-bg: #f4f5f7; --c-card: #ffffff; --c-ink: #0f172a; --c-text: #334155; --c-muted: #64748b;
+                --c-line: #e2e8f0; --c-line-strong: #cbd5e1; --c-soft: #f8fafc;
+                --c-accent: #FBE216; --c-accent-dark: #ebd10f; --c-accent-ink: #857000; --c-accent-soft: #fffbeb;
+                --c-danger: #dc2626; --radius: 14px;
+                --shadow-sm: 0 1px 3px rgba(15,23,42,.05); --shadow-md: 0 8px 24px rgba(15,23,42,.08);
+            }
+            html.dark {
+                --c-bg: #0d1117; --c-card: #161b22; --c-soft: #21262d;
+                --c-ink: #f0f6fc; --c-text: #c9d1d9; --c-muted: #8b949e;
+                --c-line: #30363d; --c-line-strong: #484f58;
+                --c-accent: #FBE216; --c-accent-dark: #fde68a; --c-accent-soft: rgba(251,226,22,.12); --c-accent-ink: #FBE216;
+                --c-danger: #f85149;
+                --shadow-sm: 0 1px 3px rgba(0,0,0,.5); --shadow-md: 0 8px 24px rgba(0,0,0,.6);
+                color-scheme: dark;
+            }
+            html.dark #cesi-topbar-wrap { background: rgba(22,27,34,.85); border-bottom-color: var(--c-line); }
+            html.dark .cesi-icon-btn, html.dark .cesi-profile-btn { background: var(--c-card); border-color: var(--c-line); }
+            html.dark .cesi-icon-btn:hover, html.dark .cesi-profile-btn:hover { background: var(--c-soft); border-color: var(--c-line-strong); }
+            html.dark .day-tag.soft { background: var(--c-soft); color: var(--c-muted); }
+            html.dark .edt-course-item { background: var(--c-soft); border-color: var(--c-line); }
+            html.dark .edt-course-item:hover { background: var(--c-card); border-color: var(--c-line-strong); }
+            html.dark .edt-course-item.is-live { background: rgba(251,226,22,.12); border-color: #7a6600; }
+            html.dark .course-time { background: var(--c-soft); border-color: var(--c-line); color: var(--c-accent-dark); }
+            html.dark .custom-link-btn { background: var(--c-soft); border-color: var(--c-line); }
+            html.dark .custom-link-btn:hover { background: var(--c-card); border-color: var(--c-accent); }
+            html.dark .access-icon-container { background: var(--c-soft); }
+            html.dark #cesi-dropdown-menu a:hover, html.dark a.notif-item:hover { background: var(--c-soft); }
+            html.dark .notif-item { border-bottom-color: var(--c-line); }
+            html.dark .edt-skel { background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%); }
+            .cesi-icon-btn .sun { display: none; }
+            html.dark .cesi-icon-btn .sun { display: block; }
+            html.dark .cesi-icon-btn .moon { display: none; }
+            html, body {
+                background: var(--c-bg) !important; margin: 0 !important; padding: 0 !important;
+                width: 100% !important; height: auto !important; min-height: 100% !important;
+                overflow-x: hidden !important; overflow-y: auto !important; position: relative !important;
+                font-family: 'Inter', system-ui, -apple-system, sans-serif !important; color: var(--c-ink) !important;
+                -webkit-font-smoothing: antialiased;
+            }
+            #cesi-app { display: flex; flex-direction: column; min-height: 100vh; background: var(--c-bg); }
+            #cesi-app, #cesi-app * { box-sizing: border-box; }
+            #cesi-app a { text-decoration: none; color: inherit; }
+            #cesi-app h1, #cesi-app h2, #cesi-app h3, #cesi-app h4, #cesi-app h5, #cesi-app p { margin: 0; padding: 0; font-family: inherit; }
+            #cesi-app button { font-family: inherit; }
+            #cesi-app svg { fill: currentColor; flex-shrink: 0; }
 
-        .cesi-icon-btn { position: relative; width: 40px; height: 40px; border-radius: 50%; background: var(--c-card); border: 1px solid var(--c-line-strong); color: var(--c-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: all .15s ease; }
-        .cesi-icon-btn:hover { background: var(--c-soft); color: var(--c-ink); border-color: #94a3b8; }
-        .cesi-icon-btn svg { width: 18px; height: 18px; }
-        .cesi-icon-btn:focus-visible, .cesi-profile-btn:focus-visible { outline: 3px solid rgba(251,226,22,.7); outline-offset: 2px; }
-        .cesi-badge { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; }
-        .cesi-badge[hidden] { display: none; }
+            #cesi-topbar-wrap { position: sticky; top: 0; z-index: 50; background: rgba(244,245,247,.82); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid rgba(203,213,225,.55); }
+            #cesi-topbar { max-width: 1240px; margin: 0 auto; padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+            #cesi-header-logo { height: 52px; width: auto; display: block; object-fit: contain; border: 0 !important; outline: 0 !important; box-shadow: none !important; background: none !important; border-radius: 0 !important; padding: 0 !important; margin: 0 !important; }
+            .cesi-user-actions { display: flex; align-items: center; gap: 12px; }
+
+            .cesi-icon-btn { position: relative; width: 40px; height: 40px; border-radius: 50%; background: var(--c-card); border: 1px solid var(--c-line-strong); color: var(--c-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: all .15s ease; }
+            .cesi-icon-btn:hover { background: var(--c-soft); color: var(--c-ink); border-color: #94a3b8; }
+            .cesi-icon-btn svg { width: 18px; height: 18px; }
+            .cesi-icon-btn:focus-visible, .cesi-profile-btn:focus-visible { outline: 3px solid rgba(251,226,22,.7); outline-offset: 2px; }
+            .cesi-badge { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; }
+            .cesi-badge[hidden] { display: none; }
 
         .cesi-menu { position: relative; }
         .cesi-dropdown { position: absolute; right: 0; top: calc(100% + 8px); z-index: 100; background: var(--c-card); border: 1px solid var(--c-line-strong); border-radius: 12px; box-shadow: var(--shadow-md); padding: 6px; display: none; flex-direction: column; gap: 2px; transform-origin: top right; animation: cesiPop .14s ease-out; }
@@ -805,6 +851,9 @@
                 <header id="cesi-topbar">
                     <a href="/accueil-apprenant" aria-label="Accueil"><img src="/uas/ksup/LOGO/cesi_RVB_ENT.png" alt="CESI" id="cesi-header-logo" /></a>
                     <div class="cesi-user-actions">
+                        <button type="button" class="cesi-icon-btn" id="cesi-theme-btn" title="Basculer clair/sombre" aria-label="Thème">
+                            ${svg('moon', 'moon')}${svg('sun', 'sun')}
+                        </button>
                         <div class="cesi-menu">
                             <button type="button" class="cesi-icon-btn" id="cesi-notif-btn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
                                 ${svg('bell')}<span class="cesi-badge" id="cesi-notif-badge" hidden></span>
@@ -956,6 +1005,9 @@
             });
             m.panel.addEventListener('click', (e) => e.stopPropagation());
         });
+        document.getElementById('cesi-theme-btn')?.addEventListener('click', () => {
+            applyTheme(!document.documentElement.classList.contains('dark'));
+        });
         document.addEventListener('click', () => closeAll());
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
     });
@@ -964,7 +1016,7 @@
 
 
     /* =====================================================================
-       2.B. PORTAIL ENT - PAGES SECONDAIRES (Actualités, Infos, Profil, etc.)
+       2.B. PORTAIL ENT - PAGES SECONDAIRES (Actualités, Ressources, Profil, etc.)
        ===================================================================== */
     function handleEntSubpage() {
         addFont();
@@ -975,10 +1027,20 @@
             return saved ? saved === 'dark' : true;
         };
         const applyTheme = (dark) => {
-            document.documentElement.classList.toggle('dark', dark);
-            document.documentElement.classList.toggle('scn-dark', dark);
-            localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
-            localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+            const el = document.documentElement;
+            if (el) {
+                el.classList.toggle('dark', dark);
+                el.classList.toggle('scn-dark', dark);
+            } else {
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.documentElement?.classList.toggle('dark', dark);
+                    document.documentElement?.classList.toggle('scn-dark', dark);
+                }, { once: true });
+            }
+            try {
+                localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+                localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+            } catch { /* ignore */ }
         };
         applyTheme(isDark());
 
@@ -1003,96 +1065,166 @@
                 font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
                 margin: 0 !important; padding: 0 !important; min-height: 100vh !important;
             }
-            #header-wrapper, #header, #navigation, .region-header, .header-site {
+
+            /* Cacher l'ancien en-tête, la barre latérale jaune et le pied de page obsolète */
+            body > header:not(#cesi-sub-topbar-wrap), header:not(#cesi-sub-topbar-wrap),
+            nav, #menu, .sidebar-navigation,
+            #pied_deco, #fil_ariane, #orejime, .hautDePage__navigationMobile,
+            .region-header, .header-site, .vignette_deco, .vignette_deco2 {
                 display: none !important;
             }
-            #cesi-sub-topbar {
+
+            /* Nouvelle Topbar unifiée identique au tableau de bord */
+            #cesi-sub-topbar-wrap {
                 position: sticky; top: 0; z-index: 1000;
-                background: var(--c-card); border-bottom: 1px solid var(--c-line);
-                display: flex; align-items: center; justify-content: space-between;
-                padding: 0 28px; height: 64px; box-shadow: var(--shadow-sm);
+                background: rgba(244,245,247,.85); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
+                border-bottom: 1px solid var(--c-line);
+            }
+            html.dark #cesi-sub-topbar-wrap {
+                background: rgba(22,27,34,.85);
+            }
+            #cesi-sub-topbar {
+                max-width: 1240px; margin: 0 auto; padding: 12px 40px;
+                display: flex; align-items: center; justify-content: space-between; gap: 16px;
             }
             .cesi-sub-left { display: flex; align-items: center; gap: 20px; }
             .cesi-sub-logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none !important; }
-            .cesi-sub-badge { background: var(--c-accent); color: #000; font-weight: 900; font-size: 1.1rem; padding: 4px 9px; border-radius: 6px; letter-spacing: .5px; }
+            .cesi-sub-badge { background: var(--c-accent); color: #000; font-weight: 900; font-size: 1.1rem; padding: 4px 9px; border-radius: 6px; letter-spacing: .5px; line-height: 1; }
             .cesi-sub-portal { font-size: .78rem; font-weight: 800; color: var(--c-muted); text-transform: uppercase; letter-spacing: 1px; }
-            .cesi-sub-nav { display: flex; align-items: center; gap: 6px; }
+            .cesi-sub-nav { display: flex !important; position: static !important; background: transparent !important; align-items: center; gap: 6px; flex-wrap: wrap; }
             .cesi-sub-nav a {
                 color: var(--c-muted) !important; font-size: .84rem; font-weight: 600; text-decoration: none !important;
-                padding: 7px 12px; border-radius: 8px; transition: all .15s;
+                padding: 7px 12px; border-radius: 8px; transition: all .15s; background: transparent !important;
             }
-            .cesi-sub-nav a:hover, .cesi-sub-nav a.active { color: var(--c-ink) !important; background: var(--c-soft); }
-            .cesi-sub-nav a.active { font-weight: 700; color: var(--c-accent-ink) !important; }
+            .cesi-sub-nav a:hover, .cesi-sub-nav a.active { color: var(--c-ink) !important; background: var(--c-card) !important; box-shadow: var(--shadow-sm); }
+            .cesi-sub-nav a.active { font-weight: 700; color: #000 !important; background: var(--c-accent) !important; }
             .cesi-sub-right { display: flex; align-items: center; gap: 10px; }
             .cesi-sub-btn {
                 height: 36px; min-width: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
                 border: 1px solid var(--c-line); border-radius: 9px; background: var(--c-card); color: var(--c-muted);
-                font: 600 .78rem 'Inter', sans-serif; cursor: pointer; transition: all .15s;
+                font: 600 .78rem 'Inter', sans-serif; cursor: pointer; transition: all .15s; text-decoration: none !important;
             }
             .cesi-sub-btn:hover { color: var(--c-ink); border-color: var(--c-muted); }
             .cesi-sub-btn svg { width: 17px; height: 17px; fill: currentColor; }
             .cesi-sub-btn .sun { display: none; } html.dark .cesi-sub-btn .sun { display: block; } html.dark .cesi-sub-btn .moon { display: none; }
 
             /* Zone de contenu principale */
-            #main-wrapper, #content, .region-content, main, #block-system-main {
-                max-width: 1240px !important; margin: 24px auto !important; padding: 0 24px !important;
+            main#page, main.avec_nav, main.active, main, #main-wrapper, #content, .region-content {
+                margin: 0 auto !important; width: 100% !important; max-width: 1240px !important;
+                padding: 32px 40px 60px !important; box-sizing: border-box !important;
                 background: transparent !important; border: 0 !important;
             }
-            .block, .node, article, .views-row, .card, .view-content > div {
+
+            .page__titre, h1.page-title, h1.title, h1 {
+                font-family: 'Inter', sans-serif !important; font-size: 1.8rem !important; font-weight: 800 !important;
+                color: var(--c-ink) !important; margin: 0 0 24px !important; letter-spacing: -.6px !important;
+            }
+            h2 {
+                font-family: 'Inter', sans-serif !important; font-size: 1.25rem !important; font-weight: 700 !important;
+                color: var(--c-ink) !important; border-left: 4px solid var(--c-accent) !important; padding-left: 10px !important;
+                margin: 28px 0 16px !important;
+            }
+            h3, h4 { font-family: 'Inter', sans-serif !important; color: var(--c-ink) !important; font-weight: 700 !important; }
+
+            #contenu-encadres, #page_deco, #sans_encadres, #sans_encadres.contenu, .sans_encadres, .contenu,
+            #page, main#page, .region-content, .layout-content, .views-element-container {
+                background: transparent !important; background-color: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important;
+            }
+            html.dark #contenu-encadres, html.dark #page_deco, html.dark #page, html.dark #sans_encadres, html.dark .sans_encadres, html.dark .contenu {
+                background: transparent !important; background-color: transparent !important;
+            }
+
+            /* Cartes pour actualités et blocs de contenu */
+            ul.actualites, ul.objets {
+                display: flex !important; flex-direction: column !important; gap: 14px !important;
+                list-style: none !important; padding: 0 !important; margin: 0 !important;
+            }
+            ul.actualites li, ul.objets li, .block, .node, article, .views-row, .card, .view-content > div {
                 background: var(--c-card) !important; border: 1px solid var(--c-line) !important;
                 border-radius: var(--radius) !important; box-shadow: var(--shadow-sm) !important;
-                padding: 22px 26px !important; margin-bottom: 20px !important; color: var(--c-text) !important;
+                padding: 20px 24px !important; margin-bottom: 16px !important; color: var(--c-text) !important;
+                transition: transform .15s, border-color .15s, box-shadow .15s !important;
             }
-            h1, h2, h3, h4 { font-family: 'Inter', sans-serif !important; color: var(--c-ink) !important; font-weight: 800 !important; }
-            h1.page-title, h1.title, h1 { font-size: 1.65rem !important; margin-bottom: 20px !important; }
-            h2 { font-size: 1.25rem !important; border-left: 4px solid var(--c-accent) !important; padding-left: 10px !important; }
+            ul.actualites li:hover, ul.objets li:hover, .card:hover {
+                border-color: var(--c-accent) !important; transform: translateY(-2px) !important;
+                box-shadow: var(--shadow-md) !important;
+            }
+            ul.actualites img.vignette, ul.objets img.vignette {
+                width: 90px !important; height: 90px !important; object-fit: cover !important;
+                border-radius: 10px !important; flex-shrink: 0 !important;
+            }
+
             a { color: var(--c-ink) !important; text-decoration: none !important; transition: color .15s; }
-            a:hover { color: var(--c-accent-ink) !important; text-decoration: underline !important; }
+            a:hover { color: var(--c-accent-ink) !important; }
+            p { line-height: 1.6 !important; }
+
+            /* Tableaux */
             table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; border: 1px solid var(--c-line) !important; border-radius: 12px !important; overflow: hidden !important; background: var(--c-card) !important; margin: 18px 0 !important; }
             th { background: var(--c-soft) !important; color: var(--c-ink) !important; font-weight: 700 !important; padding: 12px 16px !important; border-bottom: 1px solid var(--c-line) !important; }
             td { padding: 12px 16px !important; border-bottom: 1px solid var(--c-line) !important; color: var(--c-text) !important; }
             tr:last-child td { border-bottom: 0 !important; }
+
+            /* Formulaires et boutons */
             input[type="text"], input[type="search"], select, textarea {
                 background: var(--c-soft) !important; border: 1px solid var(--c-line) !important; border-radius: 8px !important;
-                color: var(--c-ink) !important; padding: 8px 12px !important; font-family: inherit !important;
+                color: var(--c-ink) !important; padding: 10px 14px !important; font-family: inherit !important; box-sizing: border-box !important;
             }
             input[type="submit"], button.btn, .button {
                 background: var(--c-accent) !important; color: #000 !important; font-weight: 700 !important;
-                border: 0 !important; border-radius: 8px !important; padding: 8px 18px !important; cursor: pointer !important;
+                border: 0 !important; border-radius: 8px !important; padding: 10px 20px !important; cursor: pointer !important;
+                transition: transform .15s, opacity .15s !important;
+            }
+            input[type="submit"]:hover, button.btn:hover, .button:hover { opacity: .9; transform: translateY(-1px); }
+
+            @media (max-width: 900px) {
+                #cesi-sub-topbar, main#page { padding-left: 20px !important; padding-right: 20px !important; }
+                .cesi-sub-nav { display: none; }
             }
         `);
 
         onReady(() => {
-            if (document.getElementById('cesi-sub-topbar')) return;
+            // Supprimer le bandeau de cookies pour plus de fluidité
+            document.getElementById('orejime')?.remove();
+
+            // Nettoyer les classes gênantes sur le body et main
+            const mainPage = document.getElementById('page');
+            if (mainPage) {
+                mainPage.classList.remove('avec_nav');
+                mainPage.classList.remove('active');
+            }
+
+            if (document.getElementById('cesi-sub-topbar-wrap')) return;
 
             const curPath = location.pathname;
-            const topbar = document.createElement('header');
-            topbar.id = 'cesi-sub-topbar';
-            topbar.innerHTML = `
-                <div class="cesi-sub-left">
-                    <a href="/accueil-apprenant" class="cesi-sub-logo">
-                        <span class="cesi-sub-badge">CESI</span>
-                        <span class="cesi-sub-portal">Portail Apprenant</span>
-                    </a>
-                    <nav class="cesi-sub-nav">
-                        <a href="/accueil-apprenant">Tableau de bord</a>
-                        <a href="/actualites" class="${curPath.includes('/actualites') ? 'active' : ''}">Actualités</a>
-                        <a href="/infos-pratiques" class="${curPath.includes('/infos-pratiques') ? 'active' : ''}">Infos pratiques</a>
-                        <a href="/ressources-numeriques" class="${curPath.includes('/ressources-numeriques') ? 'active' : ''}">Ressources</a>
-                        <a href="https://moodle.cesi.fr/" target="_blank" rel="noopener">Moodle</a>
-                        <a href="https://moodle.cesi.fr/my/courses.php" target="_blank" rel="noopener">Mes cours</a>
-                    </nav>
-                </div>
-                <div class="cesi-sub-right">
-                    <button type="button" class="cesi-sub-btn" id="cesi-sub-theme" title="Basculer clair/sombre" aria-label="Thème">
-                        ${svg('moon', 'moon')}${svg('sun', 'sun')}
-                    </button>
-                    <a href="/identification/logout" class="cesi-sub-btn" title="Déconnexion" style="color: var(--c-danger) !important;">
-                        ${svg('logout')} Déconnexion
-                    </a>
+            const topbarWrap = document.createElement('div');
+            topbarWrap.id = 'cesi-sub-topbar-wrap';
+            topbarWrap.innerHTML = `
+                <div id="cesi-sub-topbar">
+                    <div class="cesi-sub-left">
+                        <a href="/accueil-apprenant" class="cesi-sub-logo">
+                            <span class="cesi-sub-badge">CESI</span>
+                            <span class="cesi-sub-portal">Portail Apprenant</span>
+                        </a>
+                        <div class="cesi-sub-nav">
+                            <a href="/accueil-apprenant">Tableau de bord</a>
+                            <a href="/actualites" class="${curPath.includes('/actualites') ? 'active' : ''}">Actualités</a>
+                            <a href="/ressources-numeriques" class="${curPath.includes('/ressources-numeriques') ? 'active' : ''}">Ressources</a>
+                            <a href="/recherche-travaux-fin-detudes" class="${curPath.includes('/recherche-travaux-fin-detudes') ? 'active' : ''}">Travaux fin d'études</a>
+                            <a href="https://moodle.cesi.fr/" target="_blank" rel="noopener">Moodle</a>
+                            <a href="https://moodle.cesi.fr/my/courses.php" target="_blank" rel="noopener">Mes cours</a>
+                        </div>
+                    </div>
+                    <div class="cesi-sub-right">
+                        <button type="button" class="cesi-sub-btn" id="cesi-sub-theme" title="Basculer clair/sombre" aria-label="Thème">
+                            ${svg('moon', 'moon')}${svg('sun', 'sun')}
+                        </button>
+                        <a href="/identification/logout" class="cesi-sub-btn" title="Déconnexion" style="color: var(--c-danger) !important;">
+                            ${svg('logout')} Déconnexion
+                        </a>
+                    </div>
                 </div>
             `;
-            document.body.prepend(topbar);
+            document.body.prepend(topbarWrap);
 
             document.getElementById('cesi-sub-theme')?.addEventListener('click', () => {
                 applyTheme(!document.documentElement.classList.contains('dark'));
@@ -1113,21 +1245,33 @@
             return saved ? saved === 'dark' : true;
         };
         const applyTheme = (dark) => {
-            document.documentElement.classList.toggle('cesi-dark', dark);
-            document.documentElement.classList.toggle('scn-dark', dark);
-            localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
-            localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+            const el = document.documentElement;
+            if (el) {
+                el.classList.toggle('cesi-dark', dark);
+                el.classList.toggle('dark', dark);
+                el.classList.toggle('scn-dark', dark);
+            } else {
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.documentElement?.classList.toggle('cesi-dark', dark);
+                    document.documentElement?.classList.toggle('dark', dark);
+                    document.documentElement?.classList.toggle('scn-dark', dark);
+                }, { once: true });
+            }
+            try {
+                localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+                localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+            } catch { /* ignore */ }
         };
         applyTheme(isDark());
 
         addStyle(`
-            html.cesi-dark {
+            html.cesi-dark, html.dark {
                 --m-bg: #0d1117; --m-card: #161b22; --m-soft: #21262d;
                 --m-border: #30363d; --m-text: #c9d1d9; --m-ink: #f0f6fc;
                 --m-muted: #8b949e; --m-primary: #FBE216; --m-primary-ink: #000;
                 --m-line: #30363d; color-scheme: dark;
             }
-            html:not(.cesi-dark) {
+            html:not(.cesi-dark):not(.dark) {
                 --m-bg: #f4f5f7; --m-card: #ffffff; --m-soft: #f8fafc;
                 --m-border: #e2e8f0; --m-text: #334155; --m-ink: #0f172a;
                 --m-muted: #64748b; --m-primary: #FBE216; --m-primary-ink: #000;
@@ -1153,12 +1297,74 @@
             .nav-link:hover, .navbar .nav > li > a:hover {
                 color: var(--m-ink) !important; background: var(--m-soft) !important;
             }
-            /* Cartes et conteneurs Moodle */
-            #page, #page-content, #region-main, .card, .block, .dashboard-card, .course-info-container, .activity-item {
+
+            /* Cartes, conteneurs et listes Moodle */
+            #page, #page-content, #region-main, .card, .block, .dashboard-card,
+            .course-info-container, .activity-item, .list-group-item, .course-listitem,
+            [data-region="course-content"], .courses-view-course-item, .section.course-section,
+            .maincalendar .calendartable td, .maincalendar .calendartable th {
                 background: var(--m-card) !important; border: 1px solid var(--m-border) !important;
-                border-radius: 14px !important; color: var(--m-text) !important;
+                border-radius: 12px !important; color: var(--m-text) !important;
             }
             #page-wrapper { background: var(--m-bg) !important; }
+
+            /* Onglets de navigation secondaire (Cours, Participants, Notes, Compétences) */
+            html.cesi-dark ul.nav-tabs, html.cesi-dark .moremenu, html.cesi-dark .more-nav,
+            html.cesi-dark .secondary-navigation, html.cesi-dark .secondary-navigation nav,
+            html.cesi-dark .navigation, html.cesi-dark .header-maxwidth {
+                background: var(--m-card) !important; border-color: var(--m-border) !important;
+            }
+            html.cesi-dark .nav-tabs .nav-link, html.cesi-dark .more-nav .nav-link {
+                color: var(--m-muted) !important; border-color: transparent !important; background: transparent !important;
+            }
+            html.cesi-dark .nav-tabs .nav-link:hover, html.cesi-dark .more-nav .nav-link:hover {
+                color: var(--m-ink) !important; background: var(--m-soft) !important;
+            }
+            html.cesi-dark .nav-tabs .nav-link.active, html.cesi-dark .more-nav .nav-link.active {
+                color: #000 !important; background: var(--m-primary) !important; border-color: var(--m-primary) !important; font-weight: 700 !important;
+            }
+
+            /* Titres de sections et textes contrastés */
+            html.cesi-dark .sectionname, html.cesi-dark .sectionname a,
+            html.cesi-dark .course-section-header, html.cesi-dark h1, html.cesi-dark h2,
+            html.cesi-dark h3, html.cesi-dark h4, html.cesi-dark h5, html.cesi-dark h6,
+            html.cesi-dark .contentafterlink, html.cesi-dark .activity-item .activityname a,
+            html.cesi-dark .course-listitem .coursename, html.cesi-dark .course-listitem .coursename a {
+                color: var(--m-ink) !important;
+            }
+            html.cesi-dark .text-muted, html.cesi-dark .dimmed_text, html.cesi-dark p, html.cesi-dark span.categoryname {
+                color: var(--m-muted) !important;
+            }
+            html.cesi-dark .course-listitem:hover, html.cesi-dark .list-group-item:hover {
+                background: var(--m-soft) !important;
+            }
+
+            /* Formulaires, barres de recherche et sélecteurs */
+            html.cesi-dark input.form-control, html.cesi-dark select.form-control,
+            html.cesi-dark select.custom-select, html.cesi-dark .input-group-text,
+            html.cesi-dark textarea.form-control, html.cesi-dark .custom-select {
+                background: var(--m-soft) !important; border-color: var(--m-border) !important; color: var(--m-ink) !important;
+            }
+            html.cesi-dark input.form-control::placeholder { color: var(--m-muted) !important; }
+
+            /* Menus déroulants, tiroirs et popovers */
+            html.cesi-dark .dropdown-menu, html.cesi-dark .popover, html.cesi-dark .popover-body,
+            html.cesi-dark .popover-header, html.cesi-dark .modal-content,
+            html.cesi-dark .drawer, html.cesi-dark .drawer.bg-white, html.cesi-dark .drawercontent {
+                background: var(--m-card) !important; border-color: var(--m-border) !important; color: var(--m-text) !important;
+            }
+            html.cesi-dark .dropdown-item { color: var(--m-text) !important; }
+            html.cesi-dark .dropdown-item:hover, html.cesi-dark .dropdown-item:focus {
+                background: var(--m-soft) !important; color: var(--m-ink) !important;
+            }
+            html.cesi-dark .dropdown-divider { border-top-color: var(--m-border) !important; }
+            html.cesi-dark [data-action="toggle-drawer"] {
+                background: var(--m-card) !important; border: 1px solid var(--m-border) !important; color: var(--m-muted) !important;
+            }
+            html.cesi-dark [data-action="toggle-drawer"]:hover {
+                background: var(--m-soft) !important; color: var(--m-ink) !important;
+            }
+
             /* Cours et activités */
             .dashboard-card {
                 transition: transform .18s, border-color .18s, box-shadow .18s !important;
@@ -1176,6 +1382,7 @@
             }
             .activity-item:hover { background: var(--m-soft) !important; }
             .activityname a { color: var(--m-ink) !important; font-weight: 600 !important; }
+
             /* Boutons Moodle */
             .btn-primary {
                 background: var(--m-primary) !important; color: #000 !important; font-weight: 700 !important;
@@ -1185,20 +1392,13 @@
                 background: var(--m-soft) !important; color: var(--m-ink) !important; font-weight: 600 !important;
                 border: 1px solid var(--m-border) !important; border-radius: 8px !important;
             }
-            /* Typographie */
-            h1, h2, h3, h4, h5 { font-family: 'Inter', sans-serif !important; color: var(--m-ink) !important; font-weight: 800 !important; }
             h2.sectionname { border-left: 4px solid var(--m-primary) !important; padding-left: 10px !important; }
-            /* Drawer latéral */
-            .drawer, .drawercontent { background: var(--m-card) !important; border-color: var(--m-border) !important; }
-            /* Badge CESI dans la navbar */
-            .cesi-moodle-brand-badge {
-                background: var(--m-primary); color: #000; font-weight: 900; font-size: .95rem;
-                padding: 3px 8px; border-radius: 6px; letter-spacing: .5px; margin-right: 8px;
-            }
+
+            /* Bouton de thème dans la barre Moodle */
             .cesi-moodle-theme-btn {
                 height: 34px; width: 34px; display: inline-flex; align-items: center; justify-content: center;
                 border: 1px solid var(--m-border); border-radius: 8px; background: var(--m-card); color: var(--m-muted);
-                cursor: pointer; margin-left: 10px; transition: all .15s;
+                cursor: pointer; transition: all .15s; flex-shrink: 0;
             }
             .cesi-moodle-theme-btn:hover { color: var(--m-ink); border-color: var(--m-muted); }
             .cesi-moodle-theme-btn svg { width: 16px; height: 16px; fill: currentColor; }
@@ -1206,6 +1406,31 @@
         `);
 
         onReady(() => {
+            // 1. Bypasser automatiquement les pages intermédiaires LTI ou Ressources
+            if (location.pathname.includes('/mod/lti/view.php')) {
+                const launchBtn = document.querySelector('a[href*="launch.php"], a[href*="triggerview"], .activity-information a[target="_blank"]');
+                if (launchBtn && launchBtn.href) {
+                    location.replace(launchBtn.href);
+                    return;
+                }
+            }
+            if (location.pathname.includes('/mod/resource/view.php')) {
+                const resLink = document.querySelector('.resourceworkaround a, .resourcecontent a, .box a[href*="pluginfile.php"]');
+                if (resLink && resLink.href) {
+                    location.replace(resLink.href);
+                    return;
+                }
+            }
+
+            // 2. Sur la vue de cours Moodle (/course/view.php), optimiser les liens pour ouvrir directement
+            document.querySelectorAll('a[href*="/mod/lti/view.php?id="]').forEach((a) => {
+                const m = a.href.match(/id=(\d+)/);
+                if (m) {
+                    a.href = `https://moodle.cesi.fr/mod/lti/launch.php?id=${m[1]}&triggerview=0`;
+                    a.target = '_blank';
+                }
+            });
+
             // Si la page contient en fait un module Opale ou Topaze embarqué, basculer vers le lecteur
             const isTopaze = !!(document.getElementById('outCat') || document.getElementById('title') || document.querySelector('article.learnOut, .part_ti, h1.case_ti'));
             const isOpale = !isTopaze && !!(
@@ -1219,21 +1444,20 @@
                 return;
             }
 
-            // Ajouter le bouton thème et les accès rapides dans la navbar Moodle
-            const nav = document.querySelector('.navbar .navbar-nav, #mainnavigation, .primary-navigation');
-            if (nav && !document.getElementById('cesi-moodle-quicklinks')) {
+            // Intégrer proprement les accès rapides et le bouton de thème dans la barre Moodle
+            const userNav = document.getElementById('usernavigation') || document.querySelector('.navbar .navbar-nav:last-child') || document.querySelector('.navbar');
+            if (userNav && !document.getElementById('cesi-moodle-quicklinks')) {
                 const wrap = document.createElement('div');
                 wrap.id = 'cesi-moodle-quicklinks';
-                wrap.style.cssText = 'display: inline-flex; align-items: center; margin-left: 14px; gap: 6px;';
+                wrap.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; margin-right: 12px;';
                 wrap.innerHTML = `
-                    <a href="https://ent.cesi.fr/accueil-apprenant" class="nav-link" style="color: var(--m-primary) !important; font-weight: 700;">ENT CESI</a>
-                    <a href="https://moodle.cesi.fr/my/courses.php" class="nav-link">Mes cours</a>
-                    <a href="https://moodle.cesi.fr/course/view.php?id=6183" class="nav-link">A3 Informatique</a>
+                    <a href="https://ent.cesi.fr/accueil-apprenant" class="btn btn-sm" style="background: var(--m-primary) !important; color: #000 !important; font-weight: 800; font-size: .78rem; padding: 4px 10px; border-radius: 8px; text-decoration: none;">ENT CESI</a>
+                    <a href="https://moodle.cesi.fr/my/courses.php" class="nav-link d-none d-lg-inline-block" style="font-weight: 600; font-size: .84rem;">Mes cours</a>
                     <button type="button" class="cesi-moodle-theme-btn" id="cesi-moodle-theme-btn" title="Basculer clair/sombre" aria-label="Thème">
                         ${svg('moon', 'moon')}${svg('sun', 'sun')}
                     </button>
                 `;
-                nav.appendChild(wrap);
+                userNav.prepend(wrap);
 
                 document.getElementById('cesi-moodle-theme-btn')?.addEventListener('click', () => {
                     applyTheme(!document.documentElement.classList.contains('cesi-dark'));
@@ -1251,22 +1475,34 @@
         const KEY = 'scn-theme';
         const getHtml = () => document.documentElement;
         const store = {
-            get: () => { try { return localStorage.getItem(KEY); } catch { return null; } },
-            set: (v) => { try { localStorage.setItem(KEY, v); } catch { /* ignore */ } }
+            get: () => { try { return localStorage.getItem('cesi_theme') || localStorage.getItem(KEY); } catch { return null; } },
+            set: (v) => {
+                try {
+                    localStorage.setItem('cesi_theme', v);
+                    localStorage.setItem(KEY, v);
+                } catch { /* ignore */ }
+            }
         };
         const isDark = () => store.get() !== 'light';
-        const applyTheme = () => getHtml()?.classList.toggle('scn-dark', isDark());
+        const applyTheme = () => {
+            const dark = isDark();
+            getHtml()?.classList.toggle('scn-dark', dark);
+            getHtml()?.classList.toggle('dark', dark);
+        };
         const setTheme = (dark) => {
             store.set(dark ? 'dark' : 'light');
             const docs = [document];
             try { if (window.parent !== window) docs.push(window.parent.document); } catch { /* cross-origin */ }
             document.querySelectorAll('iframe').forEach((f) => { try { f.contentDocument && docs.push(f.contentDocument); } catch { /* ignore */ } });
-            docs.forEach((d) => d.documentElement?.classList.toggle('scn-dark', dark));
+            docs.forEach((d) => {
+                d.documentElement?.classList.toggle('scn-dark', dark);
+                d.documentElement?.classList.toggle('dark', dark);
+            });
         };
         addClass('scn');
         if (getHtml()) applyTheme();
         else document.addEventListener('DOMContentLoaded', () => applyTheme(), { once: true });
-        addEventListener('storage', (e) => e.key === KEY && applyTheme());
+        addEventListener('storage', (e) => (e.key === KEY || e.key === 'cesi_theme') && applyTheme());
 
         addFont();
 
@@ -1506,6 +1742,31 @@
             margin: 0 6px 4px 0; vertical-align: middle;
         }
 
+        /* Sous-pages Opale (subPageSelector) en cartes modernes cliquables */
+        html.scn nav.subPageSelector, html.scn .subPageSelector {
+            margin: 24px 0 !important; padding: 0 !important;
+        }
+        html.scn nav.subPageSelector ul.sw_child_navList {
+            display: grid !important; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+            gap: 14px !important; list-style: none !important; padding: 0 !important; margin: 16px 0 !important;
+        }
+        html.scn nav.subPageSelector ul.sw_child_navList li {
+            display: block !important; margin: 0 !important; padding: 0 !important;
+        }
+        html.scn nav.subPageSelector ul.sw_child_navList li a {
+            display: flex !important; align-items: center !important; justify-content: space-between !important;
+            padding: 16px 20px !important; background: var(--soft) !important; border: 1px solid var(--line) !important;
+            border-radius: 12px !important; color: var(--ink) !important; font-weight: 600 !important;
+            text-decoration: none !important; transition: all .15s ease !important;
+        }
+        html.scn nav.subPageSelector ul.sw_child_navList li a:hover {
+            background: var(--card) !important; border-color: var(--acc) !important; transform: translateY(-2px) !important;
+            box-shadow: 0 6px 18px rgba(0,0,0,.08) !important;
+        }
+        html.scn nav.subPageSelector ul.sw_child_navList li a::after {
+            content: "→" !important; font-weight: 800 !important; color: var(--acc-ink) !important; font-size: 1.15rem !important; margin-left: 10px !important;
+        }
+
         /* Tableaux */
         .scn-tbl { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: 12px; }
         html.scn table { width: 100% !important; border-collapse: collapse !important; font-size: .86rem !important; }
@@ -1610,20 +1871,20 @@
         const courseSub = clean($('header h2, .subTitle')?.textContent);
 
         // 2. Navigation des modules
-        const opaleNav = $('nav[aria-label*="menu" i]') || $('ul[data-totalpages]')?.closest('nav') || $('.style-51 nav, .style-76 nav');
-        const topUl = opaleNav ? (opaleNav.querySelector('ul[data-totalpages]') || opaleNav.querySelector('ul')) : null;
+        const opaleNav = $('nav.pageSelector') || $('nav[aria-label*="menu" i]') || $('ul[data-totalpages]')?.closest('nav') || $('.style-51 nav, .style-76 nav') || $('#menu');
+        const topUl = $('nav.pageSelector > ul.mnu') || $('ul[data-totalpages]') || (opaleNav ? (opaleNav.querySelector('ul[data-totalpages]') || opaleNav.querySelector('ul.mnu') || opaleNav.querySelector('ul')) : null) || $('.style-52 > ul') || $('.style-51 ul');
 
         let modules = [];
         if (topUl) {
             const topLis = Array.from(topUl.children).filter((el) => el.tagName === 'LI');
             topLis.forEach((li) => {
-                const subUl = li.querySelector('ul');
+                const subUl = li.querySelector('ul.sub, ul.mnu_open, ul');
                 const subItems = [];
                 if (subUl) {
                     Array.from(subUl.children).filter((el) => el.tagName === 'LI').forEach((subLi) => {
                         const subA = subLi.querySelector('a:not([role="button"]):not([href="#"])');
                         const subTxt = clean(subLi.textContent.replace(/^[>v]\s*/, ''));
-                        const isActive = !subA || !!subLi.querySelector('.style-72, .style-86, .style-73, .style-87');
+                        const isActive = subLi.classList.contains('sel_yes') || !subA || !!subLi.querySelector('.style-72, .style-86, .style-73, .style-87, .sel_yes');
                         if (subTxt) {
                             subItems.push({
                                 title: subTxt,
@@ -1639,24 +1900,38 @@
                     const role = a.getAttribute('role');
                     const href = a.getAttribute('href');
                     const isSubLink = subUl && subUl.contains(a);
-                    return role !== 'button' && href && href !== '#' && !isSubLink;
+                    const isToggle = a.classList.contains('tgle_c') || a.classList.contains('tgle_o');
+                    return role !== 'button' && !isToggle && href && href !== '#' && !isSubLink;
                 });
 
                 let title = '';
-                const firstDiv = li.querySelector('div');
+                const firstDiv = li.querySelector('div.lbl, div');
                 if (firstDiv) {
                     const clone = firstDiv.cloneNode(true);
-                    clone.querySelectorAll('a[role="button"], span.style-56, span.style-59, span.style-67, span.style-78').forEach((el) => el.remove());
+                    clone.querySelectorAll('a[role="button"], a.tgle_c, a.tgle_o, span.style-56, span.style-59, span.style-67, span.style-78').forEach((el) => el.remove());
                     title = clean(clone.textContent.replace(/^[>v]\s*/, ''));
                 }
                 if (!title && mainA) title = clean(mainA.textContent);
                 if (!title) title = clean(li.textContent).split('\n')[0].replace(/^[>v]\s*/, '').trim();
 
-                const hasActiveSub = subItems.some((s) => s.active);
-                const hasActiveEl = !!li.querySelector('.style-86, .style-87, .sel_yes');
                 const isCurrentUrl = mainA && mainA.getAttribute('href') && (location.pathname.endsWith(mainA.getAttribute('href')) || location.href.includes(mainA.getAttribute('href')));
-                const isSelfActive = (!mainA && !subUl) || hasActiveEl || isCurrentUrl;
-                const isActive = hasActiveSub || isSelfActive;
+                const hasActiveSub = subItems.some((s) => s.active);
+                const isLiActive = li.classList.contains('sel_yes') || li.classList.contains('anc_yes') || !!li.querySelector('.sel_yes, a.tgle_o, .style-86, .style-87, .style-72') || isCurrentUrl;
+
+                // Si ce module est actif et n'avait pas encore de sous-items dans le menu, mais que nav.subPageSelector est présent sur la page
+                if (isLiActive && subItems.length === 0) {
+                    document.querySelectorAll('nav.subPageSelector ul.sw_child_navList li a').forEach((a) => {
+                        const href = a.getAttribute('href');
+                        const isSubActive = href && (location.pathname.endsWith(href) || location.href.includes(href));
+                        subItems.push({
+                            title: clean(a.textContent),
+                            href,
+                            active: !!isSubActive
+                        });
+                    });
+                }
+
+                const isActive = hasActiveSub || isLiActive;
 
                 if (title) {
                     modules.push({
@@ -1672,9 +1947,9 @@
         // Normalisation : un seul module doit être actif à la fois
         const activeMods = modules.filter((m) => m.active);
         if (activeMods.length > 1) {
-            const best = activeMods.find((m) => m.subs.some((s) => s.active)) ||
-                         activeMods.find((m) => m.href && (location.pathname.endsWith(m.href) || location.href.includes(m.href))) ||
-                         activeMods.find((m) => !m.href) ||
+            const best = activeMods.find((m) => m.href && (location.pathname.endsWith(m.href) || location.href.includes(m.href))) ||
+                         activeMods.find((m) => m.subs.some((s) => s.active)) ||
+                         activeMods.find((m) => m.subs.length > 0) ||
                          activeMods[0];
             modules.forEach((m) => { m.active = (m === best); });
         } else if (activeMods.length === 0 && modules.length > 0) {
@@ -1713,9 +1988,10 @@
             const li = document.createElement('li');
             li.className = mod.active ? 'outCat_sel_yes' : 'outCat_sel_no';
 
-            const linkTag = mod.href ? 'a' : 'div';
+            const hasTargetHref = (mod.subs.length > 0 && mod.subs[0].href) ? mod.subs[0].href : mod.href;
+            const linkTag = hasTargetHref ? 'a' : 'div';
             const a = document.createElement(linkTag);
-            if (mod.href) a.href = mod.href;
+            if (hasTargetHref) a.href = hasTargetHref;
             a.className = 'outCat_lnk';
             a.innerHTML = `<span>${esc(mod.title)}</span>`;
             li.appendChild(a);
