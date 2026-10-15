@@ -1,0 +1,15 @@
+# Fichiers d'environnement et d'authentification
+cesi-auth.json
+.venv/
+__pycache__/
+*.pyc
+
+# Scripts et données de test locaux
+test-cesi.py
+tests/
+screenshots/
+old/
+
+# Fichier de travail userscript dupliqué (seul script.js est suivi)
+cesi.user.js
+
