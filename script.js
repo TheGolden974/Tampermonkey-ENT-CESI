@@ -1,11 +1,9 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.0
+// @version      23.1
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
-// @updateURL    https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js
-// @downloadURL  https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js
 // @match        https://ent.cesi.fr/*
 // @match        https://sts.viacesi.fr/*
 // @match        https://wayf.cesi.fr/*
@@ -18,6 +16,8 @@
 // @match        *://scenari.cesi.fr/*
 // @match        https://scenari.cesi.fr/*
 // @match        file://*/*
+// @updateURL    https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js
+// @downloadURL  https://raw.githubusercontent.com/TheGolden974/Tampermonkey-ENT-CESI/main/script.js
 // @allFrames    true
 // @run-at       document-start
 // @grant        GM_getValue
