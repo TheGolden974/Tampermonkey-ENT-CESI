@@ -108,6 +108,37 @@
         sun: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0z'
     };
     const svg = (name, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true"><path d="${ICONS[name] || ICONS.link}"/></svg>`;
+    const cesiBrand = () => `<svg class="cesi-brand-svg" viewBox="0 0 116 40" aria-label="CESI École d'ingénieurs" role="img">
+        <text x="0" y="25" fill="currentColor" font-family="'Inter', system-ui, -apple-system, sans-serif" font-weight="900" font-size="27" letter-spacing="1.2">CESI</text>
+        <rect x="74" y="20" width="22" height="5" fill="#FBE216"/>
+        <text x="0" y="37" fill="currentColor" font-family="'Inter', system-ui, -apple-system, sans-serif" font-weight="700" font-size="8.2" letter-spacing="1.25">ÉCOLE D'INGÉNIEURS</text>
+    </svg>`;
+    const BRAND_CSS = `
+        .cesi-brand-link { display: inline-flex !important; align-items: center !important; text-decoration: none !important; flex-shrink: 0 !important; color: #0f172a !important; }
+        html.dark .cesi-brand-link, html.cesi-dark .cesi-brand-link, html.scn-dark .cesi-brand-link { color: #f0f6fc !important; }
+        .cesi-brand-svg { height: 36px; width: auto; display: block; overflow: visible; }
+        html.cesi-theme-switching *, html.cesi-theme-switching *::before, html.cesi-theme-switching *::after { transition: none !important; }
+    `;
+    const withInstantTheme = (docs, fn) => {
+        const els = docs.map((d) => d?.documentElement).filter(Boolean);
+        els.forEach((el) => el.classList.add('cesi-theme-switching'));
+        fn();
+        els.forEach((el) => void el.offsetHeight);
+        requestAnimationFrame(() => els.forEach((el) => el.classList.remove('cesi-theme-switching')));
+    };
+    const getSystemDark = () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+    const getSavedTheme = () => {
+        try { return localStorage.getItem('cesi_theme') || localStorage.getItem('scn-theme'); } catch { return null; }
+    };
+    const isPrefDark = () => {
+        const saved = getSavedTheme();
+        return saved ? saved === 'dark' : getSystemDark();
+    };
+    const onSystemThemeChange = (cb) => {
+        window.matchMedia?.('(prefers-color-scheme: dark)')?.addEventListener('change', (e) => {
+            if (!getSavedTheme()) cb(e.matches);
+        });
+    };
 
     const EDT_DAYS_SHOWN = 3;           // nombre de jours de cours affichés
     const EDT_DAYS_AHEAD = 14;          // fenêtre de recherche (pour trouver 3 jours de cours)
@@ -502,23 +533,25 @@
         setTimeout(() => removeClass('cesi-loading'), 4000);
 
         const THEME_KEY = 'cesi_theme';
-        const isDark = () => {
-            const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem('scn-theme');
-            return saved ? saved === 'dark' : true;
-        };
-        const applyTheme = (dark) => {
+        const isDark = isPrefDark;
+        const applyTheme = (dark, save = false) => {
             const el = document.documentElement;
             if (el) {
-                el.classList.toggle('dark', dark);
-                el.classList.toggle('scn-dark', dark);
+                withInstantTheme([document], () => {
+                    el.classList.toggle('dark', dark);
+                    el.classList.toggle('scn-dark', dark);
+                });
             }
-            try {
-                localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
-                localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
-            } catch { /* ignore */ }
+            if (save) {
+                try {
+                    localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+                    localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+                } catch { /* ignore */ }
+            }
         };
-        applyTheme(isDark());
-        document.addEventListener('DOMContentLoaded', () => applyTheme(isDark()), { once: true });
+        applyTheme(isDark(), false);
+        document.addEventListener('DOMContentLoaded', () => applyTheme(isDark(), false), { once: true });
+        onSystemThemeChange((dark) => applyTheme(dark, false));
 
         addStyle(`
             :root {
@@ -568,12 +601,12 @@
             #cesi-app button { font-family: inherit; }
             #cesi-app svg { fill: currentColor; flex-shrink: 0; }
 
-            #cesi-topbar-wrap { position: sticky; top: 0; z-index: 50; background: rgba(244,245,247,.82); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid rgba(203,213,225,.55); }
-            #cesi-topbar { max-width: 1240px; margin: 0 auto; padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-            #cesi-header-logo { height: 52px; width: auto; display: block; object-fit: contain; border: 0 !important; outline: 0 !important; box-shadow: none !important; background: none !important; border-radius: 0 !important; padding: 0 !important; margin: 0 !important; }
-            .cesi-user-actions { display: flex; align-items: center; gap: 12px; }
+            ${BRAND_CSS}
+            #cesi-topbar-wrap { position: sticky; top: 0; z-index: 50; background: rgba(244,245,247,.85); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--c-line); }
+            #cesi-topbar { max-width: 1240px; margin: 0 auto; height: 60px; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+            .cesi-user-actions { display: flex; align-items: center; gap: 10px; }
 
-            .cesi-icon-btn { position: relative; width: 40px; height: 40px; border-radius: 50%; background: var(--c-card); border: 1px solid var(--c-line-strong); color: var(--c-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: all .15s ease; }
+            .cesi-icon-btn { position: relative; width: 36px; height: 36px; border-radius: 9px; background: var(--c-card); border: 1px solid var(--c-line-strong); color: var(--c-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: all .15s ease; }
             .cesi-icon-btn:hover { background: var(--c-soft); color: var(--c-ink); border-color: #94a3b8; }
             .cesi-icon-btn svg { width: 18px; height: 18px; }
             .cesi-icon-btn:focus-visible, .cesi-profile-btn:focus-visible { outline: 3px solid rgba(251,226,22,.7); outline-offset: 2px; }
@@ -594,7 +627,7 @@
         .notif-footer { font-size: .76rem; font-weight: 600; color: var(--c-accent-ink) !important; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 2px; }
         .notif-footer:hover { text-decoration: underline !important; }
 
-        .cesi-profile-btn { display: flex; align-items: center; gap: 10px; height: 40px; padding: 4px 12px 4px 16px; background: var(--c-card); border: 1px solid var(--c-line-strong); border-radius: 30px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all .15s ease; }
+        .cesi-profile-btn { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px 0 12px; background: var(--c-card); border: 1px solid var(--c-line-strong); border-radius: 9px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all .15s ease; }
         .cesi-profile-btn:hover { background: var(--c-soft); border-color: #94a3b8; }
         .cesi-profile-btn .user-name { font-size: .82rem; font-weight: 600; color: var(--c-ink); white-space: nowrap; line-height: 1; }
         .cesi-profile-btn img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid var(--c-accent); }
@@ -851,7 +884,7 @@
         app.innerHTML = `
             <div id="cesi-topbar-wrap">
                 <header id="cesi-topbar">
-                    <a href="/accueil-apprenant" aria-label="Accueil"><img src="/uas/ksup/LOGO/cesi_RVB_ENT.png" alt="CESI" id="cesi-header-logo" /></a>
+                    <a href="/accueil-apprenant" class="cesi-brand-link" aria-label="Accueil">${cesiBrand()}</a>
                     <div class="cesi-user-actions">
                         <button type="button" class="cesi-icon-btn" id="cesi-theme-btn" title="Basculer clair/sombre" aria-label="Thème">
                             ${svg('moon', 'moon')}${svg('sun', 'sun')}
@@ -1008,7 +1041,7 @@
             m.panel.addEventListener('click', (e) => e.stopPropagation());
         });
         document.getElementById('cesi-theme-btn')?.addEventListener('click', () => {
-            applyTheme(!document.documentElement.classList.contains('dark'));
+            applyTheme(!document.documentElement.classList.contains('dark'), true);
         });
         document.addEventListener('click', () => closeAll());
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
@@ -1024,27 +1057,29 @@
         addFont();
 
         const THEME_KEY = 'cesi_theme';
-        const isDark = () => {
-            const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem('scn-theme');
-            return saved ? saved === 'dark' : true;
-        };
-        const applyTheme = (dark) => {
+        const isDark = isPrefDark;
+        const applyTheme = (dark, save = false) => {
             const el = document.documentElement;
             if (el) {
-                el.classList.toggle('dark', dark);
-                el.classList.toggle('scn-dark', dark);
+                withInstantTheme([document], () => {
+                    el.classList.toggle('dark', dark);
+                    el.classList.toggle('scn-dark', dark);
+                });
             } else {
                 document.addEventListener('DOMContentLoaded', () => {
                     document.documentElement?.classList.toggle('dark', dark);
                     document.documentElement?.classList.toggle('scn-dark', dark);
                 }, { once: true });
             }
-            try {
-                localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
-                localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
-            } catch { /* ignore */ }
+            if (save) {
+                try {
+                    localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+                    localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+                } catch { /* ignore */ }
+            }
         };
-        applyTheme(isDark());
+        applyTheme(isDark(), false);
+        onSystemThemeChange((dark) => applyTheme(dark, false));
 
         addStyle(`
             :root {
@@ -1076,6 +1111,7 @@
                 display: none !important;
             }
 
+            ${BRAND_CSS}
             /* Nouvelle Topbar unifiée identique au tableau de bord */
             #cesi-sub-topbar-wrap {
                 position: sticky; top: 0; z-index: 1000;
@@ -1086,13 +1122,10 @@
                 background: rgba(22,27,34,.85);
             }
             #cesi-sub-topbar {
-                max-width: 1240px; margin: 0 auto; padding: 12px 40px;
+                max-width: 1240px; margin: 0 auto; height: 60px; padding: 0 32px;
                 display: flex; align-items: center; justify-content: space-between; gap: 16px;
             }
             .cesi-sub-left { display: flex; align-items: center; gap: 20px; }
-            .cesi-sub-logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none !important; }
-            .cesi-sub-badge { background: var(--c-accent); color: #000; font-weight: 900; font-size: 1.1rem; padding: 4px 9px; border-radius: 6px; letter-spacing: .5px; line-height: 1; }
-            .cesi-sub-portal { font-size: .78rem; font-weight: 800; color: var(--c-muted); text-transform: uppercase; letter-spacing: 1px; }
             .cesi-sub-nav { display: flex !important; position: static !important; background: transparent !important; align-items: center; gap: 6px; flex-wrap: wrap; }
             .cesi-sub-nav a {
                 color: var(--c-muted) !important; font-size: .84rem; font-weight: 600; text-decoration: none !important;
@@ -1203,9 +1236,8 @@
             topbarWrap.innerHTML = `
                 <div id="cesi-sub-topbar">
                     <div class="cesi-sub-left">
-                        <a href="/accueil-apprenant" class="cesi-sub-logo">
-                            <span class="cesi-sub-badge">CESI</span>
-                            <span class="cesi-sub-portal">Portail Apprenant</span>
+                        <a href="/accueil-apprenant" class="cesi-brand-link" aria-label="Accueil">
+                            ${cesiBrand()}
                         </a>
                         <div class="cesi-sub-nav">
                             <a href="/accueil-apprenant">Tableau de bord</a>
@@ -1229,7 +1261,7 @@
             document.body.prepend(topbarWrap);
 
             document.getElementById('cesi-sub-theme')?.addEventListener('click', () => {
-                applyTheme(!document.documentElement.classList.contains('dark'));
+                applyTheme(!document.documentElement.classList.contains('dark'), true);
             });
         });
     }
@@ -1242,16 +1274,15 @@
         addFont();
 
         const THEME_KEY = 'cesi_theme';
-        const isDark = () => {
-            const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem('scn-theme');
-            return saved ? saved === 'dark' : true;
-        };
-        const applyTheme = (dark) => {
+        const isDark = isPrefDark;
+        const applyTheme = (dark, save = false) => {
             const el = document.documentElement;
             if (el) {
-                el.classList.toggle('cesi-dark', dark);
-                el.classList.toggle('dark', dark);
-                el.classList.toggle('scn-dark', dark);
+                withInstantTheme([document], () => {
+                    el.classList.toggle('cesi-dark', dark);
+                    el.classList.toggle('dark', dark);
+                    el.classList.toggle('scn-dark', dark);
+                });
             } else {
                 document.addEventListener('DOMContentLoaded', () => {
                     document.documentElement?.classList.toggle('cesi-dark', dark);
@@ -1259,12 +1290,15 @@
                     document.documentElement?.classList.toggle('scn-dark', dark);
                 }, { once: true });
             }
-            try {
-                localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
-                localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
-            } catch { /* ignore */ }
+            if (save) {
+                try {
+                    localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+                    localStorage.setItem('scn-theme', dark ? 'dark' : 'light');
+                } catch { /* ignore */ }
+            }
         };
-        applyTheme(isDark());
+        applyTheme(isDark(), false);
+        onSystemThemeChange((dark) => applyTheme(dark, false));
 
         addStyle(`
             html.cesi-dark, html.dark {
@@ -1284,10 +1318,24 @@
                 font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
                 margin: 0 !important; min-height: 100vh !important;
             }
-            /* Barre de navigation Moodle */
+            ${BRAND_CSS}
+            /* Barre de navigation Moodle unifiée */
             .navbar, #mainnavigation, .fixed-top {
-                background: var(--m-card) !important; border-bottom: 1px solid var(--m-border) !important;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+                min-height: 60px !important;
+                background: rgba(244,245,247,.85) !important;
+                backdrop-filter: saturate(180%) blur(12px) !important; -webkit-backdrop-filter: saturate(180%) blur(12px) !important;
+                border-bottom: 1px solid var(--m-border) !important;
+                box-shadow: none !important;
+            }
+            html.cesi-dark .navbar, html.cesi-dark #mainnavigation, html.cesi-dark .fixed-top {
+                background: rgba(22,27,34,.85) !important;
+            }
+            .navbar .primary-navigation, .navbar .moremenu, .navbar .navbar-nav {
+                background: transparent !important; border: 0 !important;
+            }
+            #cesi-moodle-quicklinks a {
+                display: inline-flex !important; align-items: center !important; height: 36px !important;
+                padding: 0 12px !important; border-radius: 9px !important; margin: 0 !important; line-height: 1 !important;
             }
             .navbar-brand, .site-name {
                 font-weight: 800 !important; color: var(--m-ink) !important; letter-spacing: -.3px !important;
@@ -1398,8 +1446,8 @@
 
             /* Bouton de thème dans la barre Moodle */
             .cesi-moodle-theme-btn {
-                height: 34px; width: 34px; display: inline-flex; align-items: center; justify-content: center;
-                border: 1px solid var(--m-border); border-radius: 8px; background: var(--m-card); color: var(--m-muted);
+                height: 36px; width: 36px; display: inline-flex; align-items: center; justify-content: center;
+                border: 1px solid var(--m-border); border-radius: 9px; background: var(--m-card); color: var(--m-muted);
                 cursor: pointer; transition: all .15s; flex-shrink: 0;
             }
             .cesi-moodle-theme-btn:hover { color: var(--m-ink); border-color: var(--m-muted); }
@@ -1446,6 +1494,14 @@
                 return;
             }
 
+            // Unifier le logo CESI en haut à gauche de la barre Moodle
+            const moodleBrand = document.querySelector('.navbar .navbar-brand');
+            if (moodleBrand && !moodleBrand.dataset.cesiBranded) {
+                moodleBrand.dataset.cesiBranded = '1';
+                moodleBrand.classList.add('cesi-brand-link');
+                moodleBrand.innerHTML = cesiBrand();
+            }
+
             // Intégrer proprement les accès rapides et le bouton de thème dans la barre Moodle
             const userNav = document.getElementById('usernavigation') || document.querySelector('.navbar .navbar-nav:last-child') || document.querySelector('.navbar');
             if (userNav && !document.getElementById('cesi-moodle-quicklinks')) {
@@ -1462,7 +1518,7 @@
                 userNav.prepend(wrap);
 
                 document.getElementById('cesi-moodle-theme-btn')?.addEventListener('click', () => {
-                    applyTheme(!document.documentElement.classList.contains('cesi-dark'));
+                    applyTheme(!document.documentElement.classList.contains('cesi-dark'), true);
                 });
             }
         });
@@ -1485,26 +1541,29 @@
                 } catch { /* ignore */ }
             }
         };
-        const isDark = () => store.get() !== 'light';
+        const isDark = isPrefDark;
         const applyTheme = () => {
             const dark = isDark();
             getHtml()?.classList.toggle('scn-dark', dark);
             getHtml()?.classList.toggle('dark', dark);
         };
-        const setTheme = (dark) => {
-            store.set(dark ? 'dark' : 'light');
+        const setTheme = (dark, save = true) => {
+            if (save) store.set(dark ? 'dark' : 'light');
             const docs = [document];
             try { if (window.parent !== window) docs.push(window.parent.document); } catch { /* cross-origin */ }
             document.querySelectorAll('iframe').forEach((f) => { try { f.contentDocument && docs.push(f.contentDocument); } catch { /* ignore */ } });
-            docs.forEach((d) => {
-                d.documentElement?.classList.toggle('scn-dark', dark);
-                d.documentElement?.classList.toggle('dark', dark);
+            withInstantTheme(docs, () => {
+                docs.forEach((d) => {
+                    d.documentElement?.classList.toggle('scn-dark', dark);
+                    d.documentElement?.classList.toggle('dark', dark);
+                });
             });
         };
         addClass('scn');
         if (getHtml()) applyTheme();
         else document.addEventListener('DOMContentLoaded', () => applyTheme(), { once: true });
         addEventListener('storage', (e) => (e.key === KEY || e.key === 'cesi_theme') && applyTheme());
+        onSystemThemeChange((dark) => setTheme(dark, false));
 
         addFont();
 
@@ -1513,7 +1572,7 @@
             --line: #e2e8f0; --soft: #f8fafc;
             --acc: #FBE216; --acc-ink: #7a6600; --acc-soft: #fffbeb; --acc-line: #fde68a;
             --sh-sm: 0 1px 3px rgba(15,23,42,.06); --sh-md: 0 8px 24px rgba(15,23,42,.10);
-            --side: 280px; --toc: 240px; --bar: 56px;
+            --side: 280px; --toc: 240px; --bar: 60px;
         }
         html.scn.scn-dark {
             --bg: #0d1117; --card: #161b22; --ink: #e6edf3; --text: #c9d1d9; --muted: #8b949e;
@@ -1665,19 +1724,24 @@
 
         /* ---------- Colonne centrale ---------- */
         #scn-center { min-width: 0; display: flex; flex-direction: column; }
+        ${BRAND_CSS}
         #scn-bar {
-            position: sticky; top: 0; z-index: 100; height: var(--bar); display: flex; align-items: center; gap: 10px; padding: 0 24px;
-            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            position: sticky; top: 0; z-index: 100; height: var(--bar); display: flex; align-items: center; gap: 12px; padding: 0 24px;
+            background: rgba(244,245,247,.85);
             backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
             border-bottom: 1px solid var(--line);
         }
+        html.scn-dark #scn-bar { background: rgba(22,27,34,.85); }
+        #scn-bar .cesi-brand-link { display: none !important; }
+        #scn-shell.collapsed-side #scn-bar .cesi-brand-link { display: inline-flex !important; }
+        @media (max-width: 900px) { #scn-bar .cesi-brand-link { display: inline-flex !important; } }
         #scn-crumb { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); white-space: nowrap; }
         #scn-crumb span { overflow: hidden; text-overflow: ellipsis; }
         #scn-crumb .sep { flex: none; color: var(--line); font-weight: 700; }
         #scn-crumb .cur { color: var(--ink); font-weight: 700; }
         #scn-progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; background: var(--acc); transition: width .1s linear; pointer-events: none; }
         .scn-btn {
-            flex: none; height: 34px; min-width: 34px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            flex: none; height: 36px; min-width: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
             border: 1px solid var(--line); border-radius: 9px; background: var(--card); color: var(--muted);
             font: 600 .76rem 'Inter', system-ui, sans-serif; cursor: pointer; transition: all .15s;
         }
@@ -2105,8 +2169,7 @@
             <aside id="scn-side" aria-label="Navigation du cours">
                 <div class="scn-brand">
                     <div class="scn-logo-box">
-                        <div class="scn-logo-badge">CESI</div>
-                        <span class="scn-logo-txt">École d'ingénieurs</span>
+                        <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
                     </div>
                     <p class="scn-brand-title">${esc(courseTitle)}</p>
                     ${courseSub && courseSub !== courseTitle ? `<p class="scn-brand-sub">${esc(courseSub)}</p>` : ''}
@@ -2117,6 +2180,7 @@
             <div id="scn-center">
                 <div id="scn-bar">
                     <button type="button" class="scn-btn" id="scn-menu" aria-label="Menu">${svg('menu')}</button>
+                    <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
                     <div id="scn-crumb">
                         <span>${esc(courseSub || courseTitle)}</span>
                         ${breadcrumbModule ? `<span class="sep">/</span><span class="${breadcrumbSub ? '' : 'cur'}">${esc(breadcrumbModule)}</span>` : ''}
@@ -2274,8 +2338,7 @@
             <aside id="scn-side" aria-label="Navigation du cours">
                 <div class="scn-brand">
                     <div class="scn-logo-box">
-                        <div class="scn-logo-badge">CESI</div>
-                        <span class="scn-logo-txt">École d'ingénieurs</span>
+                        <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
                     </div>
                     <p class="scn-brand-title">${esc(courseTitle)}</p>
                     ${courseSub && courseSub !== courseTitle ? `<p class="scn-brand-sub">${esc(courseSub)}</p>` : ''}
@@ -2286,6 +2349,7 @@
             <div id="scn-center">
                 <div id="scn-bar">
                     <button type="button" class="scn-btn" id="scn-menu" aria-label="Menu">${svg('menu')}</button>
+                    <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
                     <div id="scn-crumb">
                         <span>${esc(courseSub || courseTitle)}</span>
                         ${moduleName ? `<span class="sep">/</span><span class="cur">${esc(moduleName)}</span>` : ''}
