@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.3
+// @version      23.4
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1337,6 +1337,12 @@
                 display: inline-flex !important; align-items: center !important; height: 36px !important;
                 padding: 0 12px !important; border-radius: 9px !important; margin: 0 !important; line-height: 1 !important;
             }
+            .navbar .nav-link, .navbar .navbar-nav > li > a {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+            }
+            .navbar .userinitials, .navbar .usermenu .avatar {
+                box-shadow: none !important; border: 0 !important;
+            }
             .navbar-brand, .site-name {
                 font-weight: 800 !important; color: var(--m-ink) !important; letter-spacing: -.3px !important;
             }
@@ -1763,6 +1769,10 @@
         html.scn.scn-dark #main { color: var(--text) !important; }
         html.scn.scn-dark #main :is(p, li, div, span, td, dt, dd, label, figcaption, blockquote, em, i, small, code, pre) {
             color: var(--text) !important;
+        }
+        html.scn #main :is(h1, h2, h3, h4, .part_ti, .section_ti, .case_ti),
+        html.scn #main :is(h1, h2, h3, h4, .part_ti, .section_ti, .case_ti) * {
+            background: none !important; background-color: transparent !important; background-image: none !important; box-shadow: none !important;
         }
         html.scn.scn-dark #main :is(h1, h2, h3, h4, h5, h6, strong, b, th, .part_ti, .section_ti, .case_ti),
         html.scn.scn-dark #main :is(h1, h2, h3, h4, h5, h6, th, .part_ti, .section_ti, .case_ti) * {
