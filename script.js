@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.2
+// @version      23.3
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1555,9 +1555,12 @@
         /* Neutralisation des éléments natifs Scenari et Opale */
         html.scn header, html.scn .style-2, html.scn #header, html.scn #tools, html.scn .style-64, html.scn .style-39,
         html.scn main a[rel="prev"]:not(#scn-shell *), html.scn main a[rel="next"]:not(#scn-shell *),
-        html.scn main a[title*="enlarge" i], html.scn main a[title*="interface" i], html.scn main a[title*="agrandir" i] {
+        html.scn main a[title*="enlarge" i]:not(.imgZoom):not(:has(img)),
+        html.scn main a[title*="interface" i]:not(.imgZoom):not(:has(img)),
+        html.scn main a[title*="agrandir" i]:not(.imgZoom):not(:has(img)) {
             display: none !important;
         }
+        html.scn a.imgZoom { display: block !important; text-decoration: none !important; }
 
         html.scn .style-0, html.scn .style-1 {
             height: auto !important; min-height: 100% !important; background: transparent !important; margin: 0 !important; padding: 0 !important;
