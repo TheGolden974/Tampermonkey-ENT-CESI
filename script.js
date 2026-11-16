@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.4b
+// @version      23.5
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -570,7 +570,7 @@
                 --shadow-sm: 0 1px 3px rgba(0,0,0,.5); --shadow-md: 0 8px 24px rgba(0,0,0,.6);
                 color-scheme: dark;
             }
-            html.dark #cesi-topbar-wrap { background: rgba(22,27,34,.85); border-bottom-color: var(--c-line); }
+            html.dark #cesi-topbar-wrap { background: rgba(22,27,34,.85) !important; border-bottom-color: var(--c-line) !important; }
             html.dark .cesi-icon-btn, html.dark .cesi-profile-btn { background: var(--c-card); border-color: var(--c-line); }
             html.dark .cesi-icon-btn:hover, html.dark .cesi-profile-btn:hover { background: var(--c-soft); border-color: var(--c-line-strong); }
             html.dark .day-tag.soft { background: var(--c-soft); color: var(--c-muted); }
@@ -602,8 +602,8 @@
             #cesi-app svg { fill: currentColor; flex-shrink: 0; }
 
             ${BRAND_CSS}
-            #cesi-topbar-wrap { position: sticky; top: 0; z-index: 50; background: rgba(244,245,247,.85); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--c-line); }
-            #cesi-topbar { max-width: 1240px; margin: 0 auto; height: 60px; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+            #cesi-topbar-wrap { position: sticky; top: 0; z-index: 50; background: rgba(244,245,247,.85) !important; backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--c-line) !important; }
+            #cesi-topbar { max-width: 1240px; margin: 0 auto; height: 60px; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: transparent !important; border: 0 !important; box-shadow: none !important; }
             .cesi-user-actions { display: flex; align-items: center; gap: 10px; }
 
             .cesi-icon-btn { position: relative; width: 36px; height: 36px; border-radius: 9px; background: var(--c-card); border: 1px solid var(--c-line-strong); color: var(--c-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: all .15s ease; }
@@ -967,7 +967,7 @@
 
         // Profil : vraie photo + chemin de la promo actuelle (ex. /fisa-info-26-29-pau-…)
         getDoc(URLS.profil).then(({ url, doc }) => {
-            const photo = doc.querySelector('img[src*="/medias/photo/"]');
+            const photo = doc.querySelector('.personne__entete__avatar img[src*="/medias/photo/"], .avatar__wrapper img[src*="/medias/photo/"]');
             if (photo) avatar.src = abs(photo.getAttribute('src'));
             const seg = new URL(url).pathname.split('/').filter(Boolean)[0];
             if (seg && !/^mon-profil$/.test(seg)) {
