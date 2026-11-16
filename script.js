@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.1
+// @version      23.2
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1578,7 +1578,9 @@
         #scn-shell.no-toc { grid-template-columns: var(--side) minmax(0, 1fr); }
         #scn-shell.collapsed-side { grid-template-columns: 0 minmax(0, 1fr) var(--toc); }
         #scn-shell.collapsed-side.no-toc { grid-template-columns: 0 minmax(0, 1fr); }
-        #scn-shell.collapsed-side #scn-side { transform: translateX(-100%); }
+        #scn-shell.collapsed-side #scn-side {
+            transform: translateX(-100%); overflow: hidden; visibility: hidden; pointer-events: none; border-right: 0;
+        }
         #scn-shell *, #scn-shell *::before, #scn-shell *::after { box-sizing: border-box; }
 
         /* ---------- Barre latérale ---------- */
@@ -1596,27 +1598,27 @@
         .scn-side-label { padding: 16px 18px 6px; font-size: .66rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); }
         .scn-side-scroll { flex: 1; overflow-y: auto; padding: 0 10px 20px; scrollbar-width: thin; }
 
-        /* Navigation de la barre latérale (#outCat, #outSec & Opale) */
-        html.scn :is(#outCat, #outSec, nav[aria-label*="menu" i]) {
+        /* Navigation de la barre latérale (#outCat, #outSec) */
+        html.scn :is(#outCat, #outSec) {
             position: static !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
             width: auto !important; margin: 0 !important; padding: 0 !important; background: none !important; border: 0 !important;
             transform: none !important;
         }
-        html.scn :is(#outCat, #outSec, nav[aria-label*="menu" i]) ul {
+        html.scn :is(#outCat, #outSec) ul {
             display: flex !important; flex-direction: column !important; gap: 2px !important; margin: 0 !important; padding: 0 !important;
             list-style: none !important; background: none !important; border: 0 !important; counter-reset: scnmod;
         }
-        html.scn :is(#outCat, #outSec, nav[aria-label*="menu" i]) li {
+        html.scn :is(#outCat, #outSec) li {
             display: block !important; position: static !important; width: 100% !important; margin: 0 !important; padding: 0 !important;
             border: 0 !important; background: none !important; counter-increment: scnmod; transform: none !important;
         }
-        html.scn :is(#outCat, #outSec, nav[aria-label*="menu" i]) :is(ul, li, a, span, div) {
+        html.scn :is(#outCat, #outSec) :is(ul, li, a, span, div) {
             position: static !important; float: none !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
             transform: none !important; height: auto !important; min-height: 0 !important; max-height: none !important;
             overflow: visible !important; white-space: normal !important; vertical-align: baseline !important;
             text-indent: 0 !important; clip: auto !important; opacity: 1 !important;
         }
-        html.scn #outCat :is(a.outCat_lnk, div.outCat_lnk), html.scn nav[aria-label*="menu" i] li > :is(a, div) {
+        html.scn #outCat :is(a.outCat_lnk, div.outCat_lnk) {
             position: relative !important; display: flex !important; align-items: center; min-height: 40px !important; box-sizing: border-box !important;
             width: 100% !important; height: auto !important;
             padding: 8px 14px 8px 42px !important; border: 0 !important; border-radius: 9px !important;
@@ -1624,22 +1626,22 @@
             font-size: .82rem !important; font-weight: 500 !important; line-height: 1.35 !important; text-align: left !important;
             transition: background .15s, color .15s;
         }
-        html.scn #outCat :is(a.outCat_lnk, div.outCat_lnk)::before, html.scn nav[aria-label*="menu" i] li > :is(a, div)::before {
+        html.scn #outCat :is(a.outCat_lnk, div.outCat_lnk)::before {
             content: counter(scnmod, decimal-leading-zero); display: block !important; position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
             min-width: 24px; padding: 1px 0;
             border-radius: 6px; background: var(--soft); border: 1px solid var(--line);
             font-size: .66rem; font-weight: 800; line-height: 1.6; text-align: center; color: var(--muted);
         }
-        html.scn #outCat :is(a.outCat_lnk, div.outCat_lnk):hover, html.scn nav[aria-label*="menu" i] li > :is(a, div):hover {
+        html.scn #outCat :is(a.outCat_lnk, div.outCat_lnk):hover {
             background: var(--soft) !important; color: var(--ink) !important;
         }
-        html.scn #outCat li.outCat_sel_yes > :is(a, div), html.scn nav[aria-label*="menu" i] li.outCat_sel_yes > :is(a, div) {
+        html.scn #outCat li.outCat_sel_yes > :is(a, div) {
             background: var(--acc-soft) !important; color: var(--ink) !important; font-weight: 700 !important; box-shadow: inset 3px 0 0 var(--acc);
         }
-        html.scn #outCat li.outCat_sel_yes > :is(a, div)::before, html.scn nav[aria-label*="menu" i] li.outCat_sel_yes > :is(a, div)::before {
+        html.scn #outCat li.outCat_sel_yes > :is(a, div)::before {
             background: var(--acc); border-color: var(--acc); color: #000;
         }
-        html.scn #outCat a span, html.scn nav[aria-label*="menu" i] a span { color: inherit !important; background: none !important; }
+        html.scn #outCat a span { color: inherit !important; background: none !important; }
 
         /* Sections imbriquées sous le module actif */
         html.scn #outSec {
@@ -1682,9 +1684,61 @@
         .scn-btn .sun { display: none; } html.scn-dark .scn-btn .sun { display: block; } html.scn-dark .scn-btn .moon { display: none; }
 
         html.scn main, html.scn #main { flex: 1 0 auto; margin: 0 !important; padding: 24px 0 56px !important; background: transparent !important; position: static !important; }
-        html.scn .case, html.scn section { max-width: 880px; margin: 0 auto !important; padding: 32px 38px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px; box-shadow: var(--sh-sm); }
+        html.scn .case { max-width: 928px; margin: 0 auto !important; padding: 0 24px !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+        html.scn #content { margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+        html.scn .case > :first-child, html.scn #content > :first-child { margin-top: 0 !important; padding-top: 0 !important; }
+        html.scn section { max-width: 880px; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px; box-shadow: var(--sh-sm); }
+        html.scn section:last-child { margin-bottom: 0 !important; }
+        html.scn section section { max-width: none; margin: 16px 0 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
         html.scn #footer { padding: 20px !important; text-align: center; opacity: .5; background: transparent !important; }
         html.scn-dark #footer img { filter: invert(1); }
+        /* Contraste garanti en mode sombre (neutralise les textes noirs et fonds blancs natifs Scenari) */
+        html.scn.scn-dark #main { color: var(--text) !important; }
+        html.scn.scn-dark #main :is(p, li, div, span, td, dt, dd, label, figcaption, blockquote, em, i, small, code, pre) {
+            color: var(--text) !important;
+        }
+        html.scn.scn-dark #main :is(h1, h2, h3, h4, h5, h6, strong, b, th, .part_ti, .section_ti, .case_ti),
+        html.scn.scn-dark #main :is(h1, h2, h3, h4, h5, h6, th, .part_ti, .section_ti, .case_ti) * {
+            color: var(--ink) !important;
+        }
+        html.scn.scn-dark #main a:not(.btnNav):not(.scn-btn),
+        html.scn.scn-dark #main a:not(.btnNav):not(.scn-btn) * {
+            color: #7dd3fc !important;
+        }
+        html.scn.scn-dark #main :is(a.collapsed_open, a.collapsed_closed),
+        html.scn.scn-dark #main :is(a.collapsed_open, a.collapsed_closed) * {
+            color: var(--ink) !important;
+        }
+        html.scn.scn-dark #main .scn-lvl { color: var(--acc-ink) !important; }
+        html.scn.scn-dark #main .scn-card-icon { color: var(--acc-ink) !important; }
+        html.scn.scn-dark #main :is(table, thead, tbody, tfoot, tr, td) {
+            background-color: transparent !important; border-color: var(--line) !important;
+        }
+        html.scn.scn-dark #main th {
+            background-color: var(--soft) !important; border-color: var(--line) !important;
+        }
+
+        html.scn .scn-meta-box,
+        html.scn #main .metas {
+            max-width: 880px; margin: 0 auto 16px !important; padding: 14px 20px !important;
+            background: var(--card) !important; background-color: var(--card) !important;
+            border: 1px solid var(--line) !important; border-radius: 14px !important; box-shadow: var(--sh-sm) !important;
+            color: var(--text) !important; text-align: left !important;
+        }
+        html.scn .scn-meta-box :is(p, div, span, strong, b, th, td, tr, table),
+        html.scn #main .metas :is(p, div, span, strong, b, th, td, tr, table, .members, .members_ti, .person, .name) {
+            background: transparent !important; background-color: transparent !important; border: 0 !important;
+        }
+        html.scn #main .metas .members {
+            display: flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important;
+            margin: 0 !important; padding: 0 !important;
+        }
+        html.scn #main .metas .members .members_ti {
+            font-size: .75rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: .5px !important;
+            color: var(--muted) !important; text-align: left !important; margin: 0 !important; padding: 0 !important;
+        }
+        html.scn .scn-meta-box :is(strong, b, th),
+        html.scn #main .metas .person :is(strong, b, .name) { color: var(--ink) !important; font-weight: 700 !important; }
 
         /* Titre de page */
         html.scn h1.case_ti.scn-dup { display: none !important; }
@@ -1777,29 +1831,50 @@
         html.scn tr:last-child td { border-bottom: 0 !important; }
 
         /* Images */
-        html.scn img.scn-img { max-width: 100% !important; height: auto !important; border-radius: 10px; border: 1px solid var(--line); box-shadow: var(--sh-sm); margin: 14px auto; display: block; }
+        html.scn img.scn-img {
+            max-width: 100% !important; height: auto !important;
+            border-radius: 14px !important; border: 1px solid var(--line) !important; box-shadow: var(--sh-sm) !important;
+            margin: 14px auto !important; display: block !important; overflow: hidden !important;
+        }
+        html.scn .case > :first-child img.scn-img, html.scn #content > :first-child img.scn-img { margin-top: 0 !important; }
 
         /* Boutons Précédent / Suivant (pageTurner) */
-        html.scn nav.pageTurner {
-            display: flex; gap: 14px; justify-content: space-between;
-            margin: 40px auto 0 !important; max-width: 880px; width: 100%;
-            background: none !important; border: 0 !important; padding: 0 !important;
+        #scn-shell nav.pageTurner {
+            position: static !important; display: flex !important; flex-direction: row !important;
+            gap: 14px !important; justify-content: space-between !important; align-items: stretch !important;
+            margin: 32px auto 0 !important; max-width: 928px !important; width: 100% !important; height: auto !important;
+            background: none !important; border: 0 !important; padding: 0 24px !important; box-sizing: border-box !important;
         }
-        html.scn a.btnNav {
-            flex: 1; max-width: 380px; display: flex; flex-direction: column; justify-content: center;
-            padding: 14px 20px !important; border-radius: 14px !important;
-            background: var(--card) !important; border: 1px solid var(--line) !important;
-            color: var(--ink) !important; text-decoration: none !important;
-            box-shadow: var(--sh-sm); transition: all .18s ease; position: relative;
+        #scn-shell a.btnNav {
+            position: relative !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+            flex: 1 1 0% !important; width: auto !important; height: auto !important; min-width: 0 !important; min-height: 0 !important; max-width: 380px !important;
+            display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; text-align: center !important;
+            padding: 14px 20px !important; margin: 0 !important; border-radius: 14px !important;
+            background: var(--card) !important; background-image: none !important; border: 1px solid var(--line) !important;
+            color: var(--ink) !important; text-decoration: none !important; text-indent: 0 !important; overflow: visible !important;
+            box-shadow: var(--sh-sm) !important; transition: all .18s ease;
         }
-        html.scn a.btnNav:hover { border-color: var(--acc-line) !important; transform: translateY(-2px); box-shadow: var(--sh-md); }
-        html.scn a.btnNav.prev { text-align: left; align-items: flex-start; }
-        html.scn a.btnNav.next { text-align: right; align-items: flex-end; margin-left: auto; }
-        html.scn a.btnNav span { font-size: .78rem !important; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-        html.scn a.btnNav::after {
-            content: attr(data-sub); display: block; font-size: .92rem; font-weight: 700;
-            color: var(--ink); margin-top: 3px; line-height: 1.3;
+        #scn-shell a.btnNav:hover { border-color: var(--acc-line) !important; transform: translateY(-2px); box-shadow: var(--sh-md) !important; }
+        #scn-shell a.btnNav.prev[data-sub] { text-align: left !important; align-items: flex-start !important; }
+        #scn-shell a.btnNav.next { margin-left: auto !important; }
+        #scn-shell a.btnNav.next[data-sub] { text-align: right !important; align-items: flex-end !important; }
+        #scn-shell a.btnNav::before,
+        #scn-shell a.btnNav span::before,
+        #scn-shell a.btnNav span::after { content: none !important; display: none !important; background: none !important; }
+        #scn-shell a.btnNav span {
+            position: static !important; width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important;
+            background: none !important; background-image: none !important; border: 0 !important;
+            display: inline-flex !important; align-items: center !important; justify-content: center !important;
+            text-indent: 0 !important; overflow: visible !important; visibility: visible !important; opacity: 1 !important;
+            font-size: .78rem !important; font-weight: 600 !important; line-height: 1.3 !important; color: var(--muted) !important; text-transform: uppercase !important; letter-spacing: .5px !important;
         }
+        #scn-shell a.btnNav :is(svg, img) { display: block !important; width: 18px !important; height: 18px !important; margin: 0 !important; flex: none !important; }
+        #scn-shell a.btnNav[data-sub]::after {
+            content: attr(data-sub) !important; display: block !important; font-size: .92rem !important; font-weight: 700 !important;
+            color: var(--ink) !important; margin-top: 3px !important; line-height: 1.3 !important;
+            position: static !important; width: auto !important; height: auto !important; background: none !important;
+        }
+        #scn-shell a.btnNav:not([data-sub])::after { content: none !important; display: none !important; }
 
         /* ---------- Sommaire « Sur cette page » (TOC) ---------- */
         #scn-toc {
@@ -1833,8 +1908,10 @@
             #scn-side { position: fixed; top: 0; bottom: 0; left: 0; width: var(--side); transform: translateX(-100%); z-index: 130; }
             html.scn-nav-open #scn-side { transform: translateX(0); }
             html.scn-nav-open #scn-scrim { display: block; }
-            html.scn nav.pageTurner { flex-direction: column; padding: 14px 16px !important; }
-            html.scn a.btnNav { max-width: none; }
+            html.scn .case { padding: 0 14px !important; }
+            html.scn section { padding: 18px 18px !important; }
+            #scn-shell nav.pageTurner { flex-direction: column !important; padding: 14px 16px !important; }
+            #scn-shell a.btnNav { max-width: none !important; }
         }
     `);
 
@@ -2210,8 +2287,6 @@
                         <span>${esc(courseSub || courseTitle)}</span>
                         ${moduleName ? `<span class="sep">/</span><span class="cur">${esc(moduleName)}</span>` : ''}
                     </div>
-                    <button type="button" class="scn-btn" id="scn-open" title="Tout afficher">${svg('expand')}<span class="lbl">Tout ouvrir</span></button>
-                    <button type="button" class="scn-btn" id="scn-close" title="Tout réduire">${svg('collapse')}<span class="lbl">Tout réduire</span></button>
                     <button type="button" class="scn-btn" id="scn-theme" title="Mode sombre / clair" aria-label="Basculer le thème">${svg('moon', 'moon')}${svg('sun', 'sun')}</button>
                     <div id="scn-progress"></div>
                 </div>
@@ -2220,7 +2295,12 @@
             <div id="scn-scrim"></div>`;
 
         const sideScroll = shell.querySelector('#scn-side-scroll');
-        if (outCat) sideScroll.appendChild(outCat);
+        if (outCat) {
+            outCat.querySelectorAll('li').forEach((li) => {
+                if (!clean(li.textContent)) li.remove();
+            });
+            sideScroll.appendChild(outCat);
+        }
         if (outSec && activeLi) activeLi.appendChild(outSec);
         [outCat, outSec].forEach((n) => n && [n, ...n.querySelectorAll('[style]')].forEach((e) => e.removeAttribute('style')));
 
@@ -2307,12 +2387,54 @@
         });
 
         const markImg = (img) => { if (img.naturalWidth > 80) img.classList.add('scn-img'); };
-        $$('#content img').forEach((img) => (img.complete ? markImg(img) : img.addEventListener('load', () => markImg(img), { once: true })));
+        $$('#main img').forEach((img) => (img.complete ? markImg(img) : img.addEventListener('load', () => markImg(img), { once: true })));
 
-        $$('a.btnNav').forEach((a) => {
-            const m = (a.title || '').match(/\((.*)\)\s*$/);
-            if (m) a.dataset.sub = a.classList.contains('prev') ? `← ${m[1]}` : `${m[1]} →`;
+        // Neutraliser les encadrés colorés natifs (ex: Concepteur du projet en violet)
+        $$('#main [style*="background"], #main .credits, #main .author, #main .auth, #main .case_au, #main .info', shell).forEach((el) => {
+            if (el.closest('section, .scn-card, .scn-tbl, article.learnOut, nav')) return;
+            el.style.removeProperty('background');
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('color');
+            el.classList.add('scn-meta-box');
         });
+        $$('#main > .case > div, #main #content > div, #main #content > aside, #main #content > article', shell).forEach((el) => {
+            if (el.matches('section, .scn-card, .scn-tbl, .scn-obj-grid, .scn-meta-box, article.learnOut') || el.id === 'content') return;
+            const bg = getComputedStyle(el).backgroundColor;
+            if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+                el.classList.add('scn-meta-box');
+            }
+        });
+
+        let fixingTurner = false;
+        const fixPageTurner = () => {
+            if (fixingTurner) return;
+            fixingTurner = true;
+            try {
+                const turner = $('nav.pageTurner');
+                if (turner) {
+                    const btns = $$('a.btnNav', turner);
+                    if (btns.length && Array.from(turner.children).some((c) => !c.matches('a.btnNav'))) {
+                        turner.innerHTML = '';
+                        btns.forEach((b) => turner.appendChild(b));
+                    }
+                    if (turner.previousElementSibling !== main) main.after(turner);
+                }
+                $$('a.btnNav').forEach((a) => {
+                    if (a.dataset.scnFixed) return;
+                    a.dataset.scnFixed = '1';
+                    const isPrev = a.classList.contains('prev');
+                    const m = (a.title || '').match(/\((.*)\)\s*$/);
+                    const sub = m ? m[1] : (clean(a.textContent) || (isPrev ? 'Précédent' : 'Suivant'));
+                    a.dataset.sub = isPrev ? `← ${sub}` : `${sub} →`;
+                    a.innerHTML = `<span>${isPrev ? 'Page précédente' : 'Page suivante'}</span>`;
+                });
+            } finally {
+                fixingTurner = false;
+            }
+        };
+        fixPageTurner();
+        addEventListener('load', fixPageTurner, { once: true });
+        new MutationObserver(fixPageTurner).observe(center, { childList: true, subtree: true });
 
         const toc = shell.querySelector('#scn-toc');
         let tocN = 0;
@@ -2339,15 +2461,6 @@
             });
         }
         if (!tocLinks.length) { toc.remove(); shell.classList.add('no-toc'); }
-
-        const turner = $('nav.pageTurner');
-        if (turner) main.after(turner);
-
-        const openBtn = $('#tools .cbkOpenBtn');
-        const closeBtn = $('#tools .cbkCloseBtn');
-        const btnOpen = $('#scn-open'), btnClose = $('#scn-close');
-        if (openBtn) btnOpen.addEventListener('click', () => openBtn.click()); else btnOpen?.remove();
-        if (closeBtn) btnClose.addEventListener('click', () => closeBtn.click()); else btnClose?.remove();
 
         removeClass('scn-loading');
         setupInteractions(shell, toc, tocLinks, $, $$);
