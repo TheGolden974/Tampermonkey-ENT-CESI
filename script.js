@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.4
+// @version      23.4b
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1778,8 +1778,12 @@
         html.scn.scn-dark #main :is(h1, h2, h3, h4, h5, h6, th, .part_ti, .section_ti, .case_ti) * {
             color: var(--ink) !important;
         }
-        html.scn.scn-dark #main a:not(.btnNav):not(.scn-btn),
-        html.scn.scn-dark #main a:not(.btnNav):not(.scn-btn) * {
+        html.scn #main a:not(.btnNav):not(.scn-btn):not(.collapsed_open):not(.collapsed_closed),
+        html.scn #main a:not(.btnNav):not(.scn-btn):not(.collapsed_open):not(.collapsed_closed) * {
+            color: #0284c7 !important;
+        }
+        html.scn.scn-dark #main a:not(.btnNav):not(.scn-btn):not(.collapsed_open):not(.collapsed_closed),
+        html.scn.scn-dark #main a:not(.btnNav):not(.scn-btn):not(.collapsed_open):not(.collapsed_closed) * {
             color: #7dd3fc !important;
         }
         html.scn.scn-dark #main :is(a.collapsed_open, a.collapsed_closed),
