@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.7
+// @version      23.8
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1772,6 +1772,7 @@
         html.scn section { max-width: 880px; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px; box-shadow: var(--sh-sm); }
         html.scn section:last-child { margin-bottom: 0 !important; }
         html.scn section section { max-width: none; margin: 16px 0 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+        html.scn section.scn-card-sec { max-width: 880px; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px !important; box-shadow: var(--sh-sm) !important; }
         html.scn section:empty { display: none !important; }
         html.scn #footer { padding: 20px !important; text-align: center; opacity: .5; background: transparent !important; }
         html.scn-dark #footer img { filter: invert(1); }
@@ -1833,11 +1834,11 @@
         html.scn #main .metas .person :is(strong, b, .name) { color: var(--ink) !important; font-weight: 700 !important; }
 
         /* Titre de page */
-        html.scn h1.case_ti.scn-dup { display: none !important; }
+        html.scn .scn-dup { display: none !important; }
         html.scn h1.case_ti {
             max-width: 880px; margin: 0 auto 20px !important; padding: 0 0 12px !important;
             border-bottom: 2px solid var(--acc) !important; background: none !important; box-shadow: none !important;
-            color: var(--ink) !important; font-size: 2rem !important; font-weight: 800 !important;
+            color: var(--ink) !important; font-size: 2.1rem !important; font-weight: 900 !important;
             letter-spacing: -.5px !important; line-height: 1.2 !important; text-align: left !important; text-transform: none !important;
         }
         html.scn h1.case_ti * { color: inherit !important; background: none !important; padding: 0 !important; margin: 0 !important; font-size: inherit !important; }
@@ -2435,12 +2436,28 @@
         if (footer) center.appendChild(footer);
         document.body.insertBefore(shell, document.body.firstChild);
 
-        if (caseTi && moduleName && clean(caseTi.textContent).toLowerCase() === clean(moduleName).toLowerCase()) {
-            caseTi.classList.add('scn-dup');
+        const normTitle = (s) => clean(s).replace(/\s*-\s*/g, '-').toLowerCase();
+        const caseTitleNorm = caseTi ? normTitle(caseTi.textContent) : '';
+        if (caseTitleNorm) {
+            $$('#main h2.part_ti', shell).forEach((h2) => {
+                if (normTitle(h2.textContent) === caseTitleNorm) h2.classList.add('scn-dup');
+            });
         }
         $$('#main section', shell).forEach((sec) => {
-            if (!clean(sec.textContent) && !sec.querySelector('img, svg, video, audio, iframe, canvas, table, input, button, object, embed')) {
-                sec.style.display = 'none';
+            const clone = sec.cloneNode(true);
+            clone.querySelectorAll('.scn-dup, section').forEach((el) => el.remove());
+            const hasContent = !!clean(clone.textContent) || !!clone.querySelector('img, svg, video, audio, iframe, canvas, table, input, button, object, embed');
+            if (!hasContent) {
+                const nested = Array.from(sec.querySelectorAll(':scope section'));
+                if (nested.length) {
+                    sec.style.setProperty('background', 'transparent', 'important');
+                    sec.style.setProperty('border', '0', 'important');
+                    sec.style.setProperty('box-shadow', 'none', 'important');
+                    sec.style.setProperty('padding', '0', 'important');
+                    nested.forEach((n) => n.classList.add('scn-card-sec'));
+                } else {
+                    sec.style.display = 'none';
+                }
             }
         });
 
