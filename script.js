@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.6
+// @version      23.7
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1772,13 +1772,15 @@
         html.scn section { max-width: 880px; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px; box-shadow: var(--sh-sm); }
         html.scn section:last-child { margin-bottom: 0 !important; }
         html.scn section section { max-width: none; margin: 16px 0 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+        html.scn section:empty { display: none !important; }
         html.scn #footer { padding: 20px !important; text-align: center; opacity: .5; background: transparent !important; }
         html.scn-dark #footer img { filter: invert(1); }
         /* Contraste garanti en mode sombre (neutralise les textes noirs et fonds blancs natifs Scenari) */
         html.scn.scn-dark #main { color: var(--text) !important; }
-        html.scn.scn-dark #main :is(p, li, div, span, td, dt, dd, label, figcaption, blockquote, em, i, small, code, pre) {
+        html.scn.scn-dark #main :is(p, ul, ol, li, div, span, td, dt, dd, label, figcaption, blockquote, em, i, small, code, pre) {
             color: var(--text) !important;
         }
+        html.scn.scn-dark #main li::marker { color: var(--text) !important; }
         html.scn #main :is(h1, h2, h3, h4, .part_ti, .section_ti, .case_ti),
         html.scn #main :is(h1, h2, h3, h4, .part_ti, .section_ti, .case_ti) * {
             background: none !important; background-color: transparent !important; background-image: none !important; box-shadow: none !important;
@@ -1833,9 +1835,10 @@
         /* Titre de page */
         html.scn h1.case_ti.scn-dup { display: none !important; }
         html.scn h1.case_ti {
-            margin: 28px 0 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important;
-            color: var(--ink) !important; font-size: 1.5rem !important; font-weight: 800 !important;
-            letter-spacing: -.4px; line-height: 1.25 !important; text-align: left !important; text-transform: none !important;
+            max-width: 880px; margin: 0 auto 20px !important; padding: 0 0 12px !important;
+            border-bottom: 2px solid var(--acc) !important; background: none !important; box-shadow: none !important;
+            color: var(--ink) !important; font-size: 2rem !important; font-weight: 800 !important;
+            letter-spacing: -.5px !important; line-height: 1.2 !important; text-align: left !important; text-transform: none !important;
         }
         html.scn h1.case_ti * { color: inherit !important; background: none !important; padding: 0 !important; margin: 0 !important; font-size: inherit !important; }
 
@@ -2435,6 +2438,11 @@
         if (caseTi && moduleName && clean(caseTi.textContent).toLowerCase() === clean(moduleName).toLowerCase()) {
             caseTi.classList.add('scn-dup');
         }
+        $$('#main section', shell).forEach((sec) => {
+            if (!clean(sec.textContent) && !sec.querySelector('img, svg, video, audio, iframe, canvas, table, input, button, object, embed')) {
+                sec.style.display = 'none';
+            }
+        });
 
         if (activeLi) sideScroll.scrollTop = Math.max(0, activeLi.offsetTop - 80);
 
