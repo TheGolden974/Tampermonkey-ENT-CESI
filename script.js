@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      24.0
+// @version      25.0
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1302,6 +1302,285 @@
             }
             input[type="submit"]:hover, button.btn:hover, .button:hover { opacity: .9; transform: translateY(-1px); }
 
+            /* Modernisation & Dark Mode des pages ENT (Notes, Trombinoscope, Profil, Carte, EDT) */
+            html.dark #page :is(strong, b, th, h1, h2, h3, h4, h5, h6) { color: var(--c-ink) !important; }
+            html.dark #page :is(p, span, td, dt, dd, label):not(.cesi-sub-badge):not(.cesi-brand-txt) { color: var(--c-text); }
+
+            /* Mes notes */
+            .semestres__notes { list-style: none !important; padding: 0 !important; margin: 0 !important; display: flex; flex-direction: column; gap: 20px; }
+            .semestres__notes > li {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 16px !important;
+                padding: 22px 24px !important; color: var(--c-text) !important; box-shadow: var(--shadow-sm) !important;
+            }
+            .semestres__notes__titre {
+                display: inline-flex !important; align-items: center; gap: 10px; font-size: 1.08rem !important; font-weight: 800 !important;
+                color: var(--c-ink) !important; border-left: 4px solid var(--c-accent); padding-left: 12px; margin-bottom: 16px;
+            }
+            .semestres__notes__titre a[href=""] { pointer-events: none; cursor: default; }
+            .semestres__notes > li > a[href] { display: none !important; }
+            .semestres__notes ul { list-style: none !important; padding: 0 !important; margin: 0 !important; display: flex; flex-direction: column; gap: 10px; }
+            .semestres__notes__document {
+                background: var(--c-soft) !important; border: 1px solid var(--c-line) !important; border-radius: 12px !important;
+                padding: 0 !important; margin: 0 !important; transition: transform .15s, border-color .15s, box-shadow .15s !important;
+            }
+            .semestres__notes__document:hover {
+                border-color: var(--c-accent) !important; transform: translateY(-1px); box-shadow: var(--shadow-sm) !important;
+            }
+            .semestres__notes__document a {
+                display: flex !important; align-items: center; justify-content: space-between; gap: 14px;
+                padding: 14px 18px !important; color: var(--c-ink) !important; font-weight: 600 !important; font-size: .94rem !important;
+                text-decoration: none !important;
+            }
+            .semestres__notes__document a::before {
+                content: "📄"; font-size: 1.15rem; flex-shrink: 0;
+            }
+            .semestres__notes__document a::after {
+                content: "Ouvrir le PDF ↗" !important; margin-left: auto !important; flex-shrink: 0 !important;
+                position: static !important; width: auto !important; height: auto !important; text-indent: 0 !important;
+                background: var(--c-accent-soft) !important; color: var(--c-accent-ink) !important;
+                border: 1px solid rgba(251,226,22,.4) !important; padding: 5px 12px !important; border-radius: 999px !important;
+                font-size: .78rem !important; line-height: 1.3 !important; font-weight: 700 !important; transition: all .15s;
+            }
+            .semestres__notes__document:hover a::after {
+                background: var(--c-accent) !important; color: #141413 !important; border-color: var(--c-accent) !important;
+            }
+
+            /* Trombinoscope */
+            .trombinoscope__form {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 16px !important;
+                padding: 20px 24px !important; margin-bottom: 18px !important; box-shadow: var(--shadow-sm) !important;
+            }
+            .trombinoscope__form form {
+                display: grid !important; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important; gap: 16px !important;
+            }
+            .trombinoscope__form--left { float: none !important; width: 100% !important; margin: 0 !important; }
+            .trombinoscope__form--left p { margin: 0 0 6px !important; }
+            .trombinoscope__form--left label {
+                font-size: .76rem !important; text-transform: uppercase; letter-spacing: .05em; color: var(--c-muted) !important; font-weight: 700 !important;
+            }
+            .trombinoscope__form--left input, .trombinoscope__form--left select { width: 100% !important; }
+            .trombinoscope__separateur { display: none !important; }
+            .trombinoscope__information {
+                display: table !important; clear: both !important; width: auto !important; grid-column: 1 / -1 !important;
+                background: var(--c-accent) !important; color: #141413 !important; font-weight: 800 !important; font-size: .82rem !important;
+                padding: 6px 14px !important; border-radius: 999px !important; margin: 0 0 18px !important;
+            }
+            .trombinoscope__carte {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 16px !important;
+                box-shadow: var(--shadow-sm) !important; overflow: hidden !important; color: var(--c-text) !important;
+                transition: transform .15s, border-color .15s, box-shadow .15s !important;
+            }
+            .trombinoscope__carte:hover { border-color: var(--c-accent) !important; transform: translateY(-2px); box-shadow: var(--shadow-md) !important; }
+            .trombinoscope__carte__avatar { background: var(--c-soft) !important; border-right: 1px solid var(--c-line) !important; }
+            .trombinoscope__carte__action a, .trombinoscope__carte__action button {
+                border-radius: 8px !important; background: var(--c-soft) !important; border: 1px solid var(--c-line) !important;
+            }
+
+            /* Mon profil */
+            .personne__entete {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 18px !important;
+                box-shadow: var(--shadow-md) !important; color: var(--c-text) !important; overflow: hidden !important;
+            }
+            .personne__entete__carte {
+                background: var(--c-soft) !important; border: 0 !important; border-right: 1px solid var(--c-line) !important;
+                border-radius: 0 !important; color: var(--c-text) !important;
+            }
+            .personne__entete__avatar img { border: 3px solid var(--c-accent) !important; box-shadow: var(--shadow-sm) !important; }
+            .personne__entete__info, .personne__entete__info strong { color: var(--c-ink) !important; }
+            .emploiDuTemps__liste { list-style: none !important; padding: 0 !important; margin: 12px 0 0 !important; display: flex; flex-direction: column; gap: 10px; }
+            .emploiDuTemps__item {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-left: 4px solid var(--c-accent) !important;
+                border-radius: 12px !important; padding: 14px 18px !important; color: var(--c-text) !important; box-shadow: var(--shadow-sm) !important;
+            }
+            .emploiDuTemps__item__jour { color: var(--c-muted) !important; font-size: .75rem !important; font-weight: 700 !important; text-transform: uppercase; }
+            .emploiDuTemps__item__horaire { color: var(--c-accent-ink) !important; font-weight: 800 !important; }
+            .emploiDuTemps__item__intitule { color: var(--c-ink) !important; font-weight: 700 !important; }
+            .personne__entete.accordeon {
+                border-radius: 16px !important; background: var(--c-card) !important; border: 1px solid var(--c-line) !important;
+                color: var(--c-text) !important; padding: 0 !important; margin-top: 22px !important; box-shadow: var(--shadow-sm) !important;
+            }
+            .personne__entete.accordeon h2.accordeon__titre {
+                background: var(--c-soft) !important; color: var(--c-ink) !important; border: 0 !important;
+                border-left: 4px solid var(--c-accent) !important; border-bottom: 1px solid var(--c-line) !important;
+                margin: 0 !important; padding: 16px 24px !important; font-size: 1.08rem !important; font-weight: 800 !important;
+            }
+            .personne__entete.accordeon .accordeon__conteneur {
+                padding: 22px 24px !important; background: var(--c-card) !important;
+            }
+            .personne__profils {
+                display: inline-flex !important; align-items: center; float: none !important;
+                background: var(--c-accent-soft) !important; color: var(--c-accent-ink) !important;
+                border: 1px solid rgba(251,226,22,.4) !important; padding: 5px 14px !important;
+                border-radius: 999px !important; font-size: .78rem !important; font-weight: 700 !important; margin-bottom: 14px !important;
+            }
+            .personne__liens {
+                display: grid !important; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+                gap: 16px !important; align-items: stretch !important;
+            }
+            .personne__liens > h2 { grid-column: 1 / -1 !important; margin: 6px 0 4px !important; }
+            .personne__liens .trombinoscope__wrapper {
+                display: flex !important; flex-direction: column !important; gap: 8px !important;
+                width: 100% !important; float: none !important; margin: 0 !important;
+            }
+            .personne__liens .trombinoscope__wrapper > div:first-child {
+                font-size: .75rem !important; font-weight: 700 !important; color: var(--c-muted) !important;
+                text-transform: uppercase; letter-spacing: .04em;
+            }
+            .personne__liens .trombinoscope__carte {
+                width: 100% !important; margin: 0 !important; flex: 1 !important; display: flex !important;
+            }
+            .personne__liens .trombinoscope__carte__avatar {
+                width: 100px !important; min-width: 100px !important; height: 115px !important; flex-shrink: 0 !important;
+            }
+            .personne__liens .trombinoscope__carte__avatar img {
+                width: 100% !important; height: 100% !important; object-fit: cover !important;
+            }
+
+            /* Carte étudiante européenne */
+            .toybox.pdf-viewer__toybox {
+                display: flex !important; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 14px !important;
+                padding: 10px 16px !important; margin-bottom: 18px !important; box-shadow: var(--shadow-sm) !important;
+            }
+            .toybox__btn, .toybox__zoom, [class*="toybox"] button, [class*="toybox"] a {
+                background: var(--c-soft) !important; border: 1px solid var(--c-line) !important; border-radius: 10px !important;
+                color: var(--c-ink) !important; width: auto !important; padding: 7px 14px !important; font-weight: 600 !important;
+            }
+            .toybox__btn.js-pdfFallback {
+                display: inline-flex !important; align-items: center; gap: 6px;
+                background: var(--c-accent-soft) !important; color: var(--c-accent-ink) !important;
+                border: 1px solid rgba(251,226,22,.4) !important; padding: 6px 14px !important;
+                border-radius: 999px !important; font-size: .82rem !important; font-weight: 700 !important;
+                transition: all .15s !important;
+            }
+            .toybox__btn.js-pdfFallback:hover {
+                background: var(--c-accent) !important; color: #141413 !important; border-color: var(--c-accent) !important;
+            }
+            .toybox__btn.js-pdfFallback::after { content: "↗"; font-weight: 800; }
+            .toybox__btn.js-pdfFallback .toybox__btn-icon { display: none !important; }
+            .toybox__btn-icon { color: var(--c-ink) !important; }
+            .pdf-viewer__content {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 20px !important;
+                padding: 36px 24px !important; box-shadow: var(--shadow-md) !important; display: flex; justify-content: center;
+            }
+            .pdf-viewer__viewer { width: 100% !important; display: flex; justify-content: center; }
+            .pdf-viewer__page {
+                width: 100% !important; max-width: 540px !important; height: auto !important; aspect-ratio: 979 / 588;
+                margin: 0 auto !important; border-radius: 16px !important; overflow: hidden !important;
+                box-shadow: 0 14px 36px rgba(0,0,0,.32) !important; border: 1px solid rgba(0,0,0,.1) !important;
+            }
+            .pdf-viewer__page .canvasWrapper, .pdf-viewer__page canvas {
+                width: 100% !important; height: 100% !important; display: block !important;
+            }
+            .pdf-viewer__page .textLayer { display: none !important; }
+            .cesi-info-banner {
+                display: flex; align-items: center; gap: 12px; margin: 0 0 22px; padding: 14px 18px;
+                background: var(--c-card); border: 1px solid var(--c-line); border-left: 4px solid var(--c-accent);
+                border-radius: 14px; box-shadow: var(--shadow-sm); color: var(--c-text); font-size: .92rem;
+            }
+            .cesi-info-banner strong { color: var(--c-ink); }
+
+            /* Mon emploi du temps */
+            .fc-toolbar { display: flex !important; align-items: center; justify-content: space-between; margin-bottom: 18px !important; }
+            .fc-toolbar h2 { border-left: 0 !important; padding-left: 0 !important; margin: 0 0 0 10px !important; display: inline-flex; align-items: center; }
+            .fc-title-header {
+                background: var(--c-accent) !important; color: #141413 !important; border-radius: 999px !important;
+                padding: 7px 16px !important; font-size: .9rem !important; font-weight: 800 !important; display: inline-block;
+            }
+            .fc-view-container {
+                border-radius: 16px !important; overflow: hidden !important; border: 1px solid var(--c-line) !important; box-shadow: var(--shadow-md) !important;
+            }
+            .fc-view, .fc-agenda-view, .fc-widget-content, .fc-widget-header, .fc-bg table, .fc-content-skeleton table {
+                background: var(--c-card) !important; border-color: var(--c-line) !important; color: var(--c-text) !important;
+            }
+            .fc-bg, .fc-row .fc-bg, .fc-unthemed td, .fc-unthemed th, .fc-unthemed .fc-content,
+            .fc-view .fc-axis, .fc-view .fc-bg td, .fc-view .fc-bg th, .fc-view .fc-day-grid td.fc-axis,
+            .fc-axis::before, .fc-axis::after {
+                background: transparent !important; border-color: var(--c-line) !important;
+            }
+            .fc-day-header.fc-today { border-bottom: 3px solid var(--c-accent) !important; }
+            .fc-event { border-radius: 10px !important; border: 0 !important; padding: 6px 8px !important; box-shadow: 0 2px 6px rgba(0,0,0,.15) !important; }
+            .fc-nightly { background: var(--c-soft) !important; }
+            .fc-today, .fc-state-highlight { background: var(--c-accent-soft) !important; }
+            .fc-divider { background: var(--c-line) !important; border-color: var(--c-line) !important; }
+            .fc-toolbar button, .fc-button {
+                background: var(--c-card) !important; color: var(--c-ink) !important; border: 1px solid var(--c-line) !important;
+                border-radius: 9px !important; text-shadow: none !important; box-shadow: none !important; font-weight: 600 !important;
+            }
+
+            /* Documents partagés & Fiches documents */
+            .liste__document { list-style: none !important; padding: 0 !important; margin: 18px 0 0 !important; display: flex; flex-direction: column; gap: 18px; }
+            .liste__document > li:empty { display: none !important; }
+            .liste__document--element {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 16px !important;
+                padding: 22px 24px !important; box-shadow: var(--shadow-sm) !important;
+            }
+            .liste__document--element--titre {
+                display: inline-flex !important; align-items: center; gap: 10px; font-size: 1.08rem !important; font-weight: 800 !important;
+                color: var(--c-ink) !important; border-left: 4px solid var(--c-accent); padding-left: 12px; margin-bottom: 16px;
+            }
+            .liste__document--definition, .liste-definition__motif2 { list-style: none !important; padding: 0 !important; margin: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+            ul.objets.liste__ged { list-style: none !important; padding: 0 !important; margin: 0 !important; display: flex !important; flex-direction: column !important; gap: 10px !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+            ul.objets.liste__ged li.liste__ged-item {
+                background: var(--c-soft) !important; border: 1px solid var(--c-line) !important; border-radius: 12px !important;
+                padding: 0 !important; margin: 0 !important; box-shadow: none !important;
+            }
+            ul.objets.liste__ged li.liste__ged-item:hover { border-color: var(--c-accent) !important; transform: translateY(-1px) !important; box-shadow: var(--shadow-sm) !important; }
+            .liste__ged-item a {
+                display: flex !important; align-items: center; justify-content: space-between; gap: 14px;
+                padding: 14px 18px !important; color: var(--c-ink) !important; font-weight: 600 !important; font-size: .94rem !important;
+                outline: none !important;
+            }
+            .liste__ged-item a::before { content: "📄"; font-size: 1.15rem; flex-shrink: 0; }
+            .liste__ged-item a::after {
+                content: "Consulter →" !important; margin-left: auto; flex-shrink: 0;
+                background: var(--c-accent-soft); color: var(--c-accent-ink); border: 1px solid rgba(251,226,22,.4);
+                padding: 5px 12px; border-radius: 999px; font-size: .78rem; font-weight: 700; transition: all .15s;
+            }
+            .liste__ged-item:hover a::after { background: var(--c-accent); color: #141413; border-color: var(--c-accent); }
+
+            /* Encadrés / Fichiers joints sur les fiches documents */
+            #avec_encadres { width: 100% !important; float: none !important; min-height: 0 !important; height: auto !important; margin: 0 !important; }
+            #encadres { width: 100% !important; float: none !important; margin: 18px 0 0 !important; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start; }
+            .encadre_auto_fiche {
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 16px !important;
+                padding: 20px 24px !important; box-shadow: var(--shadow-sm) !important; margin: 0 !important;
+            }
+            .encadre_auto_fiche > h2:first-child { margin-top: 0 !important; }
+            .fichiers-joints { list-style: none !important; padding: 0 !important; margin: 0 !important; display: flex; flex-direction: column; gap: 10px; }
+            .fichiers-joints__item {
+                background: var(--c-soft) !important; border: 1px solid var(--c-line) !important; border-radius: 12px !important;
+                transition: transform .15s, border-color .15s !important;
+            }
+            .fichiers-joints__item:hover { border-color: var(--c-accent) !important; transform: translateY(-1px); }
+            .fichiers-joints__lien {
+                display: flex !important; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+                padding: 14px 16px !important; color: var(--c-ink) !important; font-weight: 600 !important;
+                background-image: none !important;
+            }
+            .fichiers-joints__lien::before { display: none !important; }
+            .fichiers-joints__titre { color: var(--c-ink) !important; font-weight: 700 !important; }
+            .fichiers-joints__type-poids { color: var(--c-muted) !important; font-size: .82rem !important; margin-left: 6px; }
+            .fichiers-joints__lien::after {
+                content: "Télécharger ↗"; margin-left: auto; flex-shrink: 0;
+                background: var(--c-accent-soft); color: var(--c-accent-ink); border: 1px solid rgba(251,226,22,.4);
+                padding: 5px 12px; border-radius: 999px; font-size: .78rem; font-weight: 700; transition: all .15s;
+            }
+            .fichiers-joints__item:hover .fichiers-joints__lien::after { background: var(--c-accent); color: #141413; border-color: var(--c-accent); }
+            .liste-definitions { list-style: none !important; padding: 0 !important; margin: 0 !important; display: flex; flex-direction: column; gap: 8px; }
+            .encadre__liste { list-style: none !important; padding: 0 !important; margin: 0 !important; display: flex; flex-wrap: wrap; gap: 8px; }
+            .encadre__liste li {
+                background: var(--c-soft) !important; border: 1px solid var(--c-line) !important; border-radius: 999px !important;
+                padding: 5px 12px !important; font-size: .82rem !important; color: var(--c-text) !important;
+            }
+            .actions-fiche { margin: 14px 0 !important; }
+            .actions-fiche button {
+                display: inline-flex; align-items: center; gap: 8px;
+                background: var(--c-card) !important; border: 1px solid var(--c-line) !important; border-radius: 10px !important;
+                color: var(--c-ink) !important; padding: 8px 14px !important; font-weight: 600 !important; cursor: pointer;
+            }
+            .actions-fiche button:hover { border-color: var(--c-accent) !important; }
+
             @media (max-width: 900px) {
                 #cesi-sub-topbar, main#page { padding-left: 20px !important; padding-right: 20px !important; }
                 .cesi-sub-nav { display: none; }
@@ -1354,6 +1633,16 @@
             document.getElementById('cesi-sub-theme')?.addEventListener('click', () => {
                 applyTheme(!document.documentElement.classList.contains('dark'), true);
             });
+
+            // Info carte étudiante française sur la page Carte étudiante européenne
+            if (curPath.includes('carte-etudiante') && !document.querySelector('.cesi-info-banner')) {
+                const h1 = document.querySelector('#page h1, main h1, .page__titre');
+                const banner = document.createElement('div');
+                banner.className = 'cesi-info-banner';
+                banner.innerHTML = `<span>ℹ️</span><div><strong>Carte étudiante française :</strong> la carte étudiante normale est disponible dans l'application <strong>Edusign &gt; Nom &gt; Mes cartes</strong>.</div>`;
+                if (h1) h1.after(banner);
+                else (document.querySelector('#page, main') || document.body).prepend(banner);
+            }
         });
     }
 
@@ -1547,6 +1836,15 @@
             .btn-secondary {
                 background: var(--m-soft) !important; color: var(--m-ink) !important; font-weight: 600 !important;
                 border: 1px solid var(--m-border) !important; border-radius: 8px !important;
+            }
+            html.cesi-dark .card-footer, html.cesi-dark .card-header {
+                background: var(--m-card) !important; border-color: var(--m-border) !important; color: var(--m-text) !important;
+            }
+            html.cesi-dark .btn-dark {
+                background: var(--m-soft) !important; color: var(--m-ink) !important; border: 1px solid var(--m-border) !important;
+            }
+            html.cesi-dark .btn-dark:hover {
+                background: var(--m-primary) !important; color: #000 !important; border-color: var(--m-primary) !important;
             }
             h2.sectionname { border-left: 4px solid var(--m-primary) !important; padding-left: 10px !important; }
 
