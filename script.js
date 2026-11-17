@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.9
+// @version      24.0
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -358,11 +358,74 @@
         }
     }
 
+    function applyLoginCardStyle() {
+        addFont();
+        if (!document.querySelector('link[href*="photo-1541829070764"]')) {
+            const pre = document.createElement('link');
+            pre.rel = 'preload'; pre.as = 'image';
+            pre.href = 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1920&auto=format&fit=crop';
+            (document.head || document.documentElement)?.appendChild(pre);
+        }
+        addStyle(`
+            ${BRAND_CSS}
+            html {
+                margin: 0 !important; padding: 0 !important; height: auto !important; min-height: 100% !important;
+                background: #0d1117 !important;
+            }
+            body {
+                background: linear-gradient(135deg, rgba(13,17,23,.82), rgba(10,12,16,.92)),
+                            url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1920&auto=format&fit=crop') center / cover no-repeat fixed #0d1117 !important;
+                font-family: 'Inter', system-ui, sans-serif !important;
+                margin: 0 !important; padding: max(24px, calc(50vh - 255px)) 0 24px !important;
+                min-height: 100vh !important; width: 100% !important; box-sizing: border-box !important;
+                display: flex !important; justify-content: center !important; align-items: flex-start !important;
+                overflow-x: hidden !important;
+            }
+            body > *:not(#cesi-login-card) { display: none !important; }
+            body::before { content: ""; position: fixed; inset: 0; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; z-index: 0; }
+            #cesi-login-card {
+                position: relative; z-index: 2; background: #fff; width: 100%; max-width: 420px;
+                padding: 40px 32px; margin: 0 20px 32px; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,.55);
+                box-sizing: border-box; animation: cesiScaleIn .45s cubic-bezier(.16,1,.3,1);
+            }
+            #cesi-login-card.cesi-no-pop { animation: none !important; }
+            @keyframes cesiScaleIn { from { opacity: 0; transform: scale(.97) translateY(10px); } to { opacity: 1; transform: none; } }
+            #cesi-login-card .cesi-login-brand { display: flex; justify-content: center; margin: 0 auto 24px; color: #0f172a !important; }
+            #cesi-login-card .cesi-login-brand .cesi-brand-svg { height: 42px; }
+            #cesi-login-card h2 { font-size: 1.45rem; font-weight: 700; color: #0f172a; text-align: center; margin: 0 0 4px; letter-spacing: -.5px; }
+            #cesi-login-card p.subtitle { font-size: .88rem; color: #64748b; text-align: center; margin: 0 0 26px; }
+            #cesi-login-card form { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box; }
+            #cesi-login-card label { display: block !important; font-size: .72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .8px; margin: 14px 0 6px; }
+            #cesi-login-card input[type="email"], #cesi-login-card input[type="text"], #cesi-login-card input[type="password"] {
+                width: 100% !important; max-width: 100% !important; height: 48px !important;
+                border: 1.5px solid #e2e8f0 !important; border-radius: 10px !important; padding: 0 16px !important;
+                font: 500 .95rem 'Inter', sans-serif !important; color: #0f172a !important;
+                background: #f8fafc !important; box-sizing: border-box !important; transition: all .2s ease !important;
+            }
+            #cesi-login-card input:focus { border-color: #FBE216 !important; background: #fff !important; box-shadow: 0 0 0 4px rgba(251,226,22,.3) !important; outline: none !important; }
+            #cesi-login-card .style-26 { display: flex !important; align-items: center !important; margin: 15px 0 !important; }
+            #cesi-login-card input[type="checkbox"] { width: 16px !important; height: 16px !important; accent-color: #FBE216; cursor: pointer; margin: 0 8px 0 0 !important; }
+            #cesi-login-card .style-28 { font-size: .82rem !important; font-weight: 500 !important; color: #475569 !important; cursor: pointer; margin: 0 !important; }
+            #cesi-login-card #submitButton, #cesi-login-card .style-30, #cesi-login-card input[type="submit"], #cesi-login-card button[type="submit"] {
+                display: flex !important; justify-content: center !important; align-items: center !important;
+                width: 100% !important; height: 48px !important; margin: 20px 0 0 !important; padding: 0 !important;
+                background: #FBE216 !important; color: #000 !important; border: 0 !important; border-radius: 10px !important;
+                font: 700 .9rem 'Inter', sans-serif !important; text-transform: uppercase; letter-spacing: .5px; cursor: pointer;
+                box-shadow: 0 4px 14px rgba(251,226,22,.3) !important; transition: all .2s cubic-bezier(.4,0,.2,1) !important; box-sizing: border-box !important;
+            }
+            #cesi-login-card #submitButton:hover, #cesi-login-card .style-30:hover, #cesi-login-card input[type="submit"]:hover, #cesi-login-card button[type="submit"]:hover {
+                background: #ebd10f !important; transform: translateY(-1.5px); box-shadow: 0 6px 20px rgba(251,226,22,.45) !important;
+            }
+            #cesi-login-card .help-links { border-top: 1px solid #f1f5f9; margin-top: 26px; padding-top: 18px; text-align: center; }
+            #cesi-login-card .help-links a { color: #64748b; font-size: .78rem; text-decoration: none; margin: 0 8px; font-weight: 500; transition: color .15s; }
+            #cesi-login-card .help-links a:hover { color: #0f172a; text-decoration: underline; }
+        `);
+    }
+
     function handleEntWayf() {
         const email = getEmail();
-        if (!email) return;
+        applyLoginCardStyle();
 
-        maskPage(1200);
         onReady(() => {
             const findEntInput = () => {
                 const input = document.querySelector('input[name="login"], input[type="email"], input#username, input[type="text"]');
@@ -371,10 +434,47 @@
                 return { input, form, value: email };
             };
             const target = findEntInput();
-            if (target) {
-                submitCredentials(target.input, target.form, target.value);
+            if (!target) return;
+
+            const { input, form } = target;
+            const card = document.createElement('div');
+            card.id = 'cesi-login-card';
+            card.innerHTML = `<div class="cesi-login-brand">${cesiBrand()}</div><h2>Bienvenue sur l'ENT</h2><p class="subtitle">Identifiez-vous avec votre adresse CESI</p>`;
+
+            const cleanForm = document.createElement('form');
+            cleanForm.method = form.method || 'post';
+            cleanForm.action = form.action || location.href;
+            form.querySelectorAll('input[type="hidden"]').forEach((h) => cleanForm.appendChild(h.cloneNode(true)));
+
+            const lbl = document.createElement('label');
+            lbl.setAttribute('for', input.id || 'login');
+            lbl.textContent = 'Identifiant CESI';
+            input.placeholder = 'prenom.nom@viacesi.fr';
+            if (email && !input.value) input.value = email;
+
+            const submitBtn = document.createElement('button');
+            submitBtn.type = 'submit';
+            submitBtn.textContent = 'Continuer';
+
+            cleanForm.append(lbl, input, submitBtn);
+            const saveWayfState = () => {
+                setEmail(input.value);
+                try {
+                    GM_setValue('cesi_login_h', String(Math.round(card.getBoundingClientRect().height)));
+                    GM_setValue('cesi_login_ts', Date.now());
+                } catch { /* ignore */ }
+            };
+            cleanForm.addEventListener('submit', saveWayfState, true);
+            card.appendChild(cleanForm);
+
+            document.body.innerHTML = '';
+            document.body.appendChild(card);
+
+            if (email) {
+                saveWayfState();
+                submitCredentials(input, cleanForm, email);
             } else {
-                tryFillAndSubmit(findEntInput, 20, 50);
+                input.focus();
             }
         });
     }
@@ -437,62 +537,24 @@
     }
 
     function handleStsLogin() {
-        addFont();
-        addStyle(`
-            html, body {
-                background: linear-gradient(135deg, rgba(13,17,23,.82), rgba(10,12,16,.92)),
-                            url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1920&auto=format&fit=crop') center / cover no-repeat fixed #0d1117 !important;
-                font-family: 'Inter', system-ui, sans-serif !important;
-                margin: 0 !important; padding: 0 !important;
-                min-height: 100vh !important; width: 100% !important;
-                display: flex !important; justify-content: center !important; align-items: center !important;
-                overflow-x: hidden !important;
-            }
-            body::before { content: ""; position: fixed; inset: 0; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; z-index: 0; }
-            #cesi-login-card {
-                position: relative; z-index: 2; background: #fff; width: 100%; max-width: 420px;
-                padding: 40px 32px; margin: 20px; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,.55);
-                box-sizing: border-box; animation: cesiScaleIn .45s cubic-bezier(.16,1,.3,1);
-            }
-            @keyframes cesiScaleIn { from { opacity: 0; transform: scale(.97) translateY(10px); } to { opacity: 1; transform: none; } }
-            #cesi-login-card img { display: block !important; max-width: 135px; height: auto; margin: 0 auto 24px; border: 0 !important; border-radius: 0 !important; }
-            #cesi-login-card h2 { font-size: 1.45rem; font-weight: 700; color: #0f172a; text-align: center; margin: 0 0 4px; letter-spacing: -.5px; }
-            #cesi-login-card p.subtitle { font-size: .88rem; color: #64748b; text-align: center; margin: 0 0 26px; }
-            #cesi-login-card form { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box; }
-            #cesi-login-card label { display: block !important; font-size: .72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .8px; margin: 14px 0 6px; }
-            #cesi-login-card input[type="email"], #cesi-login-card input[type="text"], #cesi-login-card input[type="password"] {
-                width: 100% !important; max-width: 100% !important; height: 48px !important;
-                border: 1.5px solid #e2e8f0 !important; border-radius: 10px !important; padding: 0 16px !important;
-                font: 500 .95rem 'Inter', sans-serif !important; color: #0f172a !important;
-                background: #f8fafc !important; box-sizing: border-box !important; transition: all .2s ease !important;
-            }
-            #cesi-login-card input:focus { border-color: #FBE216 !important; background: #fff !important; box-shadow: 0 0 0 4px rgba(251,226,22,.3) !important; outline: none !important; }
-            #cesi-login-card .style-26 { display: flex !important; align-items: center !important; margin: 15px 0 !important; }
-            #cesi-login-card input[type="checkbox"] { width: 16px !important; height: 16px !important; accent-color: #FBE216; cursor: pointer; margin: 0 8px 0 0 !important; }
-            #cesi-login-card .style-28 { font-size: .82rem !important; font-weight: 500 !important; color: #475569 !important; cursor: pointer; margin: 0 !important; }
-            #cesi-login-card #submitButton, #cesi-login-card .style-30 {
-                display: flex !important; justify-content: center !important; align-items: center !important;
-                width: 100% !important; height: 48px !important; margin: 20px 0 0 !important; padding: 0 !important;
-                background: #FBE216 !important; color: #000 !important; border: 0 !important; border-radius: 10px !important;
-                font: 700 .9rem 'Inter', sans-serif !important; text-transform: uppercase; letter-spacing: .5px; cursor: pointer;
-                box-shadow: 0 4px 14px rgba(251,226,22,.3) !important; transition: all .2s cubic-bezier(.4,0,.2,1) !important; box-sizing: border-box !important;
-            }
-            #cesi-login-card #submitButton:hover, #cesi-login-card .style-30:hover { background: #ebd10f !important; transform: translateY(-1.5px); box-shadow: 0 6px 20px rgba(251,226,22,.45) !important; }
-            #cesi-login-card .help-links { border-top: 1px solid #f1f5f9; margin-top: 26px; padding-top: 18px; text-align: center; }
-            #cesi-login-card .help-links a { color: #64748b; font-size: .78rem; text-decoration: none; margin: 0 8px; font-weight: 500; transition: color .15s; }
-            #cesi-login-card .help-links a:hover { color: #0f172a; text-decoration: underline; }
-        `);
+        applyLoginCardStyle();
 
         onReady(() => {
             const form = document.querySelector('form');
             if (!form) return;
 
-            const oldLogo = document.querySelector('img[src*="logo"]');
-            const logoSrc = oldLogo ? oldLogo.src : '/adfs/portal/logo/logo.png';
-
             const card = document.createElement('div');
             card.id = 'cesi-login-card';
-            card.innerHTML = `<img src="${esc(logoSrc)}" alt="CESI" /><h2>Bienvenue sur l'ENT</h2><p class="subtitle">Connectez-vous à votre espace d'apprentissage</p>`;
+            let fromWayf = false;
+            let prevH = 0;
+            try {
+                const ts = Number(GM_getValue('cesi_login_ts', 0));
+                prevH = Number(GM_getValue('cesi_login_h', 0));
+                fromWayf = (ts && Date.now() - ts < 15000) || document.referrer.includes('/identification/wayf');
+                if (ts) GM_setValue('cesi_login_ts', 0);
+            } catch { /* ignore */ }
+            if (fromWayf) card.classList.add('cesi-no-pop');
+            card.innerHTML = `<div class="cesi-login-brand">${cesiBrand()}</div><h2>Bienvenue sur l'ENT</h2><p class="subtitle">Connectez-vous à votre espace d'apprentissage</p>`;
             card.appendChild(form);
 
             const btn = form.querySelector('span[role="button"]') || form.querySelector('#submitButton') || form.querySelector('.style-30');
@@ -513,6 +575,35 @@
                 userInput.placeholder = 'prenom.nom@viacesi.fr';
             }
             if (passInput) { passInput.placeholder = '••••••••'; (userInput && !userInput.value ? userInput : passInput).focus(); }
+
+            if (fromWayf && prevH > 0) {
+                const targetH = Math.round(card.getBoundingClientRect().height);
+                const passBlock = passInput?.closest('div') || passInput;
+                const revealEls = [passBlock, help].filter(Boolean);
+                revealEls.forEach((el) => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(-6px)';
+                });
+                card.style.height = `${prevH}px`;
+                card.style.overflow = 'hidden';
+                void card.offsetHeight;
+                requestAnimationFrame(() => {
+                    card.style.transition = 'height .38s cubic-bezier(.16, 1, .3, 1)';
+                    card.style.height = `${targetH}px`;
+                    revealEls.forEach((el) => {
+                        el.style.transition = 'opacity .28s ease .08s, transform .28s ease .08s';
+                        el.style.opacity = '1';
+                        el.style.transform = 'none';
+                    });
+                    card.addEventListener('transitionend', (e) => {
+                        if (e.propertyName === 'height') {
+                            card.style.height = '';
+                            card.style.overflow = '';
+                            card.style.transition = '';
+                        }
+                    }, { once: true });
+                });
+            }
 
             // Mémorise l'email (jamais le mot de passe)
             const remember = () => userInput && setEmail(userInput.value);
