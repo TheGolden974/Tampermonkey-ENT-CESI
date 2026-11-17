@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.5
+// @version      23.6
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1320,17 +1320,26 @@
             }
             ${BRAND_CSS}
             /* Barre de navigation Moodle unifiée */
-            .navbar, #mainnavigation, .fixed-top {
-                min-height: 60px !important;
+            .top-bar, #mainnavigation, .navbar:not(.toast-wrapper) {
+                min-height: 60px !important; width: 100% !important; left: 0 !important; right: 0 !important;
                 background: rgba(244,245,247,.85) !important;
                 backdrop-filter: saturate(180%) blur(12px) !important; -webkit-backdrop-filter: saturate(180%) blur(12px) !important;
                 border-bottom: 1px solid var(--m-border) !important;
                 box-shadow: none !important;
             }
-            html.cesi-dark .navbar, html.cesi-dark #mainnavigation, html.cesi-dark .fixed-top {
+            html.cesi-dark .top-bar, html.cesi-dark #mainnavigation, html.cesi-dark .navbar:not(.toast-wrapper) {
                 background: rgba(22,27,34,.85) !important;
             }
-            .navbar .primary-navigation, .navbar .moremenu, .navbar .navbar-nav {
+            .top-bar .navbar, .top-bar .top-bar-inner, .top-bar .container-fluid {
+                background: transparent !important; border: 0 !important; box-shadow: none !important; backdrop-filter: none !important;
+                max-width: none !important;
+            }
+            .toast-wrapper {
+                background: transparent !important; border: 0 !important; min-height: 0 !important;
+                backdrop-filter: none !important; box-shadow: none !important;
+            }
+            .navbar .primary-navigation, .navbar .moremenu, .navbar .more-nav, .navbar .navbar-nav,
+            html.cesi-dark .navbar .moremenu, html.cesi-dark .navbar .more-nav {
                 background: transparent !important; border: 0 !important;
             }
             #cesi-moodle-quicklinks a {
