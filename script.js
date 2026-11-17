@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      25.1
+// @version      26.0
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -108,17 +108,354 @@
         sun: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0z'
     };
     const svg = (name, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true"><path d="${ICONS[name] || ICONS.link}"/></svg>`;
-    const cesiBrand = () => `<svg class="cesi-brand-svg" viewBox="0 0 116 40" aria-label="CESI École d'ingénieurs" role="img">
-        <text x="0" y="25" fill="currentColor" font-family="'Inter', system-ui, -apple-system, sans-serif" font-weight="900" font-size="27" letter-spacing="1.2">CESI</text>
-        <rect x="74" y="20" width="22" height="5" fill="#FBE216"/>
-        <text x="0" y="37" fill="currentColor" font-family="'Inter', system-ui, -apple-system, sans-serif" font-weight="700" font-size="8.2" letter-spacing="1.25">ÉCOLE D'INGÉNIEURS</text>
-    </svg>`;
+    const CESI_LOGO_URL = 'https://www.anrt.asso.fr/sites/default/files/styles/large/public/2024-03/CESI.png?itok=GJ29qFB-';
+    const cesiBrand = () => `<span class="cesi-brand-wrap"><img class="cesi-brand-svg cesi-brand-img" src="${CESI_LOGO_URL}" alt="CESI École d'ingénieurs" /><img class="cesi-brand-svg cesi-brand-img cesi-brand-yellow" src="${CESI_LOGO_URL}" alt="" aria-hidden="true" /></span>`;
     const BRAND_CSS = `
         .cesi-brand-link { display: inline-flex !important; align-items: center !important; text-decoration: none !important; flex-shrink: 0 !important; color: #0f172a !important; }
         html.dark .cesi-brand-link, html.cesi-dark .cesi-brand-link, html.scn-dark .cesi-brand-link { color: #f0f6fc !important; }
-        .cesi-brand-svg { height: 36px; width: auto; display: block; overflow: visible; }
+        .cesi-brand-wrap { position: relative; display: inline-flex; align-items: center; }
+        .cesi-brand-svg, .cesi-brand-img { height: 48px; width: auto !important; display: block; object-fit: contain; }
+        .cesi-brand-yellow { display: none !important; position: absolute; inset: 0; pointer-events: none; clip-path: inset(40% 0 38% 73%); }
+        html.dark .cesi-brand-img:not(.cesi-brand-yellow), html.cesi-dark .cesi-brand-img:not(.cesi-brand-yellow), html.scn-dark .cesi-brand-img:not(.cesi-brand-yellow) { filter: brightness(0) invert(1); }
+        html.dark .cesi-brand-yellow, html.cesi-dark .cesi-brand-yellow, html.scn-dark .cesi-brand-yellow { display: block !important; }
         html.cesi-theme-switching *, html.cesi-theme-switching *::before, html.cesi-theme-switching *::after { transition: none !important; }
     `;
+    const CAMPUS_3D_CSS = `
+        .cesi-map-section { margin-top: 32px; }
+        .cesi-map-section .section-title { display: flex; align-items: center; gap: 8px; font-size: .95rem; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; color: var(--c-ink); margin: 0 0 16px; padding: 0 4px; }
+        .cesi-map-section .section-title svg { width: 18px; height: 18px; color: var(--c-muted); fill: currentColor; }
+        .cesi-map-card { background: var(--c-card); border: 1px solid var(--c-line); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+        .cesi-map-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--c-line); background: var(--c-card); }
+        .cesi-map-tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .cesi-map-tab { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--c-line); background: var(--c-soft); color: var(--c-muted); font: 700 .76rem 'Inter', sans-serif; cursor: pointer; transition: all .15s; }
+        .cesi-map-tab:hover { color: var(--c-ink); border-color: var(--c-line-strong); }
+        .cesi-map-tab.active { background: var(--c-accent); color: #141413 !important; border-color: var(--c-accent); }
+        .cesi-map-status { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: var(--c-accent-soft); border: 1px solid rgba(251,226,22,.45); color: var(--c-accent-ink) !important; font-size: .76rem; font-weight: 700; cursor: pointer; transition: all .15s; }
+        .cesi-map-status:hover { background: var(--c-accent); color: #141413 !important; }
+        .cesi-map-status.is-live { background: #dcfce7; border-color: #86efac; color: #166534 !important; }
+        .cesi-map-status span { color: inherit !important; }
+        .cesi-map-status .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .cesi-map-status.is-live .dot { background: #16a34a; animation: cesiPulse 1.4s infinite; }
+        #cesi-3d-stage { position: relative; height: 430px; perspective: 1150px; overflow: hidden; cursor: grab; user-select: none; background: radial-gradient(circle at 50% 45%, var(--c-soft) 0%, var(--c-bg) 100%); touch-action: none; contain: layout style paint; overscroll-behavior: contain; }
+        #cesi-3d-stage:active { cursor: grabbing; }
+        #cesi-3d-world { position: absolute; left: 50%; top: 52%; transform-style: preserve-3d; transition: transform .22s cubic-bezier(.22,1,.36,1); }
+        #cesi-3d-stage.is-dragging #cesi-3d-world { transition: none; will-change: transform; }
+        #cesi-3d-stage.is-dragging .m3d-face { transition: none !important; }
+        .m3d-floor { position: absolute; width: 700px; height: 250px; left: -350px; top: -125px; transform-style: preserve-3d; transition: transform .3s cubic-bezier(.22,1,.36,1), opacity .2s; }
+        .m3d-slab { position: absolute; background: var(--c-card); border: 2px solid var(--c-line-strong); border-radius: 14px; box-shadow: 0 18px 36px rgba(0,0,0,.14); transform-style: preserve-3d; }
+        html.dark .m3d-slab { background: #161b22; border-color: #30363d; box-shadow: 0 18px 38px rgba(0,0,0,.45); }
+        .m3d-slab-west { left: 8px; top: 8px; width: 172px; height: 224px; transform: rotateZ(-10deg); }
+        .m3d-slab-center { left: 172px; top: 32px; width: 428px; height: 188px; }
+        .m3d-slab-east { left: 598px; top: 24px; width: 112px; height: 196px; transform: rotateZ(10deg); }
+        .m3d-floor-tag { position: absolute; left: 12px; top: -24px; font-size: .72rem; font-weight: 800; letter-spacing: .5px; color: var(--c-ink) !important; background: var(--c-card); border: 1px solid var(--c-line); padding: 2px 9px; border-radius: 6px; transform: translateZ(4px); pointer-events: none; }
+        .m3d-corridor { position: absolute; left: 162px; top: 112px; width: 430px; height: 26px; background: rgba(148,163,184,.08); border-top: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line); display: flex; align-items: center; justify-content: center; font-size: .54rem; font-weight: 700; letter-spacing: 2.5px; color: var(--c-muted); pointer-events: none; }
+        .m3d-corridor-hall { position: absolute; left: 92px; top: 150px; width: 72px; height: 56px; background: rgba(148,163,184,.08); border-radius: 6px; pointer-events: none; }
+        .m3d-corridor-wl { position: absolute; left: 74px; top: 10px; width: 16px; height: 144px; background: rgba(148,163,184,.08); border-radius: 4px; pointer-events: none; }
+        .m3d-corridor-wr { position: absolute; left: 152px; top: 58px; width: 16px; height: 96px; background: rgba(148,163,184,.08); border-radius: 4px; pointer-events: none; }
+        .m3d-corridor-e { position: absolute; left: 584px; top: 32px; width: 16px; height: 116px; transform: rotateZ(10deg); background: rgba(148,163,184,.08); border-radius: 4px; pointer-events: none; }
+        .m3d-entrance { position: absolute; left: 112px; bottom: -4px; padding: 3px 10px; border-radius: 6px; background: var(--c-ink); color: var(--c-bg) !important; font-size: .62rem; font-weight: 800; letter-spacing: .6px; transform: translateZ(4px) rotateZ(-10deg); pointer-events: none; }
+        .m3d-compass { position: absolute; right: 12px; top: 8px; font-size: .6rem; font-weight: 800; color: var(--c-muted) !important; transform: translateZ(4px); pointer-events: none; }
+        .m3d-room { position: absolute; transform-style: preserve-3d; cursor: pointer; --h: 20px; --top-bg: var(--c-soft); --wall-bg: #cbd5e1; --wall-side: #94a3b8; --bd: var(--c-line-strong); --fg: var(--c-ink); }
+        html.dark .m3d-room { --top-bg: #21262d; --wall-bg: #2d333b; --wall-side: #1c2128; --bd: #444c56; }
+        .m3d-room:hover { --h: 26px; --top-bg: var(--c-card); --bd: var(--c-accent); }
+        .m3d-room.is-special { --top-bg: rgba(148,163,184,.16); }
+        .m3d-room.is-wc { --h: 16px; --top-bg: #dbeafe; --wall-bg: #93c5fd; --wall-side: #60a5fa; --bd: #3b82f6; --fg: #1e3a8a; }
+        html.dark .m3d-room.is-wc { --top-bg: #1e3a5f; --wall-bg: #1d4ed8; --wall-side: #1e40af; --bd: #60a5fa; --fg: #dbeafe; }
+        .m3d-room.is-stairs { --h: 14px; --top-bg: #e2e8f0; --wall-bg: #94a3b8; --wall-side: #64748b; --bd: #64748b; --fg: #334155; }
+        html.dark .m3d-room.is-stairs { --top-bg: #1f2937; --wall-bg: #374151; --wall-side: #111827; --bd: #4b5563; --fg: #9ca3af; }
+        .m3d-room.is-admin { --h: 24px; --top-bg: #f3e8ff; --wall-bg: #c084fc; --wall-side: #9333ea; --bd: #a855f7; --fg: #581c87; }
+        html.dark .m3d-room.is-admin { --top-bg: #3b1d5e; --wall-bg: #6b21a8; --wall-side: #4c1d95; --bd: #a855f7; --fg: #f3e8ff; }
+        .m3d-room.is-terrace { --h: 8px; --top-bg: #dcfce7; --wall-bg: #4ade80; --wall-side: #16a34a; --bd: #22c55e; --fg: #14532d; }
+        html.dark .m3d-room.is-terrace { --top-bg: #14532d; --wall-bg: #15803d; --wall-side: #166534; --bd: #4ade80; --fg: #dcfce7; }
+        .m3d-room.is-active { --h: 34px; --top-bg: var(--c-accent); --wall-bg: #eab308; --wall-side: #ca8a04; --bd: #141413; --fg: #141413; }
+        .m3d-room.is-active.is-live { --h: 38px; --top-bg: #22c55e; --wall-bg: #16a34a; --wall-side: #15803d; --bd: #052e16; --fg: #ffffff; }
+        .m3d-face { position: absolute; box-sizing: border-box; border: 1px solid var(--bd); transition: transform .22s ease, background .2s ease, border-color .2s ease; }
+        .m3d-top { inset: 0; background: var(--top-bg); transform: translateZ(var(--h)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3px; border-radius: 4px; color: var(--fg) !important; font-weight: 800; font-size: .68rem; line-height: 1.15; }
+        .m3d-top span, .m3d-top small { color: inherit !important; }
+        .m3d-top small { font-size: .56rem; font-weight: 600; opacity: .82; margin-top: 2px; }
+        .m3d-front { left: 0; right: 0; bottom: 0; height: var(--h); background: var(--wall-bg); transform-origin: bottom; transform: rotateX(-90deg); }
+        .m3d-back  { left: 0; right: 0; top: 0; height: var(--h); background: var(--wall-bg); transform-origin: top; transform: rotateX(90deg); }
+        .m3d-left  { top: 0; bottom: 0; left: 0; width: var(--h); background: var(--wall-side); transform-origin: left; transform: rotateY(-90deg); }
+        .m3d-right { top: 0; bottom: 0; right: 0; width: var(--h); background: var(--wall-side); transform-origin: right; transform: rotateY(90deg); }
+        .m3d-pin { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) translateZ(calc(var(--h) + 22px)) rotateX(-55deg); background: #141413; color: #fbe216 !important; padding: 3px 8px; border-radius: 999px; font-size: .64rem; font-weight: 800; white-space: nowrap; box-shadow: 0 6px 14px rgba(0,0,0,.35); pointer-events: none; }
+        .m3d-room.is-live .m3d-pin { background: #166534; color: #ffffff !important; }
+        .cesi-map-hud { position: absolute; left: 14px; bottom: 14px; z-index: 10; pointer-events: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .cesi-map-hint { background: rgba(15,23,42,.85); color: #f8fafc !important; padding: 5px 10px; border-radius: 8px; font-size: .7rem; font-weight: 600; }
+        .cesi-map-detail { position: absolute; right: 14px; bottom: 14px; z-index: 10; max-width: 280px; background: var(--c-card); border: 1px solid var(--c-line); border-left: 4px solid var(--c-accent); border-radius: 10px; padding: 10px 13px; box-shadow: var(--shadow-md); font-size: .76rem; color: var(--c-text); }
+        .cesi-map-detail strong { display: block; color: var(--c-ink); font-size: .84rem; margin-bottom: 3px; }
+        .cesi-map-detail .sub { color: var(--c-muted); font-size: .72rem; }
+    `;
+    const mountCampus3D = (mountEl) => {
+        if (!mountEl) return { updateFromItems: () => {}, selectCourse: () => {} };
+        const FLOORS = {
+            RDC: {
+                label: 'RDC — Rez-de-chaussée',
+                hasEast: true,
+                rooms: [
+                    { id: 'atelier3', wing: 'west', label: 'Atelier 3', x: 10, y: 10, w: 62, h: 46, kind: 'special', info: 'Atelier technique · Aile Ouest' },
+                    { id: 'atelier2', wing: 'west', label: 'Atelier 2', x: 10, y: 62, w: 62, h: 46, kind: 'special', info: 'Atelier technique · Aile Ouest' },
+                    { id: 'fablab', wing: 'west', label: 'FabLab', x: 10, y: 114, w: 62, h: 78, kind: 'special', info: 'Atelier de fabrication numérique · Aile Ouest' },
+                    { id: 'bde', wing: 'west', label: 'BDE', x: 92, y: 10, w: 64, h: 46, kind: 'special', info: 'Bureau des Étudiants · Aile Ouest' },
+                    { id: 'rdc_esc_o', wing: 'west', label: 'Esc. / Asc.', x: 96, y: 66, w: 54, h: 76, kind: 'stairs', info: 'Escalier principal & ascenseur · Hall d\'entrée' },
+                    { id: 'rdc_wc_o', label: 'WC 🚻', x: 176, y: 40, w: 40, h: 66, kind: 'wc', info: 'Toilettes Ouest · RDC' },
+                    { id: 's2', label: 'Salle 2', x: 222, y: 40, w: 58, h: 66, info: 'Salle de cours · RDC Nord' },
+                    { id: 's4', label: 'Salle 4', x: 286, y: 40, w: 58, h: 66, info: 'Salle de cours · RDC Nord' },
+                    { id: 's6', label: 'Salle 6', x: 350, y: 40, w: 58, h: 66, info: 'Salle de cours · RDC Nord' },
+                    { id: 's8', label: 'Salle 8', x: 414, y: 40, w: 58, h: 66, info: 'Salle de cours · RDC Nord' },
+                    { id: 's9', label: 'Salle 9', x: 478, y: 40, w: 58, h: 66, info: 'Salle de cours · RDC Nord' },
+                    { id: 's1', label: 'Salle 1', x: 200, y: 144, w: 62, h: 66, info: 'Salle de cours · RDC Sud (près de l\'entrée)' },
+                    { id: 's3', label: 'Salle 3', x: 268, y: 144, w: 62, h: 66, info: 'Salle de cours · RDC Sud' },
+                    { id: 's5', label: 'Salle 5', x: 336, y: 144, w: 62, h: 66, info: 'Salle de cours · RDC Sud' },
+                    { id: 's7', label: 'Salle 7', x: 404, y: 144, w: 62, h: 66, info: 'Salle de cours · RDC Sud' },
+                    { id: 'rdc_tech', label: 'Local Tech.', x: 472, y: 144, w: 64, h: 66, kind: 'special', info: 'Locaux techniques & accès terrasse · RDC' },
+                    { id: 'rdc_wc_e', label: 'WC 🚻', x: 544, y: 20, w: 40, h: 52, kind: 'wc', info: 'Toilettes Est · RDC' },
+                    { id: 'rdc_esc_e', label: 'Esc. Est', x: 544, y: 78, w: 40, h: 58, kind: 'stairs', info: 'Escalier Est · RDC' },
+                    { id: 'recantou', wing: 'east', label: 'Lou Recantou', sub: 'Détente & Repas', x: 10, y: 10, w: 92, h: 176, kind: 'special', info: 'Espace restauration (7 micro-ondes, terrasse) · Aile Est' },
+                ]
+            },
+            'R+1': {
+                label: 'R+1 — 1er étage',
+                hasEast: true,
+                rooms: [
+                    { id: 'r1_wo1', wing: 'west', label: 'Salle ?', x: 10, y: 10, w: 62, h: 46, kind: 'special', info: 'Salle R+1 Aile Ouest (nom à définir)' },
+                    { id: 'r1_wo2', wing: 'west', label: 'Salle ?', x: 10, y: 62, w: 62, h: 46, kind: 'special', info: 'Salle R+1 Aile Ouest (nom à définir)' },
+                    { id: 'r1_10', wing: 'west', label: '10 - R+1', x: 10, y: 114, w: 62, h: 78, info: 'Salle de cours · R+1 Aile Ouest' },
+                    { id: 'r1_wo3', wing: 'west', label: 'Salle ?', x: 92, y: 10, w: 64, h: 46, kind: 'special', info: 'Salle R+1 Aile Ouest (nom à définir)' },
+                    { id: 'r1_esc_o', wing: 'west', label: 'Esc. / Asc.', x: 96, y: 66, w: 54, h: 76, kind: 'stairs', info: 'Escalier principal & ascenseur · R+1' },
+                    { id: 'r1_wc_o', label: 'WC 🚻', x: 176, y: 40, w: 40, h: 66, kind: 'wc', info: 'Toilettes Ouest · R+1' },
+                    { id: 'r1_17', label: '17 - R+1', x: 222, y: 40, w: 58, h: 66, info: 'Salle de cours · R+1 Nord' },
+                    { id: 'r1_19', label: '19 - R+1', x: 286, y: 40, w: 58, h: 66, info: 'Salle de cours · R+1 Nord' },
+                    { id: 'r1_21', label: '21 - R+1', x: 350, y: 40, w: 58, h: 66, info: 'Salle de cours · R+1 Nord' },
+                    { id: 'r1_23', label: '23 - R+1', x: 414, y: 40, w: 58, h: 66, info: 'Salle de cours · R+1 Nord' },
+                    { id: 'r1_25', label: '25 - R+1', x: 478, y: 40, w: 58, h: 66, info: 'Salle de cours · R+1 Nord' },
+                    { id: 'r1_16', label: '16 - R+1', x: 200, y: 144, w: 58, h: 66, info: 'Salle de cours · R+1 Sud' },
+                    { id: 'r1_18', label: '18 - R+1', x: 264, y: 144, w: 58, h: 66, info: 'Salle de cours · R+1 Sud' },
+                    { id: 'r1_20', label: '20 - R+1', x: 328, y: 144, w: 58, h: 66, info: 'Salle de cours · R+1 Sud' },
+                    { id: 'r1_22', label: '22 - R+1', x: 392, y: 144, w: 58, h: 66, info: 'Salle de cours · R+1 Sud' },
+                    { id: 'r1_24', label: '24 - R+1', x: 456, y: 144, w: 58, h: 66, info: 'Salle de cours · R+1 Sud' },
+                    { id: 'r1_26', label: '26 - R+1', x: 520, y: 148, w: 56, h: 60, info: 'Salle de cours · R+1 Jonction Est' },
+                    { id: 'r1_wc_e', label: 'WC 🚻', x: 544, y: 20, w: 40, h: 52, kind: 'wc', info: 'Toilettes Est · R+1' },
+                    { id: 'r1_esc_e', label: 'Esc. Est', x: 544, y: 78, w: 40, h: 58, kind: 'stairs', info: 'Escalier Est · R+1' },
+                    { id: 'r1_labo', wing: 'east', label: 'Labo Chimie', x: 10, y: 10, w: 92, h: 40, kind: 'special', info: 'Laboratoire de chimie · R+1 Aile Est (fond)' },
+                    { id: 'r1_29', wing: 'east', label: '29 - R+1', x: 10, y: 55, w: 92, h: 40, info: 'Salle de cours · R+1 Aile Est' },
+                    { id: 'r1_28', wing: 'east', label: '28 - R+1', x: 10, y: 100, w: 92, h: 40, info: 'Salle de cours · R+1 Aile Est' },
+                    { id: 'r1_27', wing: 'east', label: '27 - R+1', x: 10, y: 145, w: 92, h: 42, info: 'Salle de cours · R+1 Angle Sud-Est' },
+                ]
+            },
+            'R+2': {
+                label: 'R+2 — 2ème étage',
+                hasEast: false,
+                rooms: [
+                    { id: 'r2_wo1', wing: 'west', label: 'Salle ?', x: 10, y: 10, w: 62, h: 46, kind: 'special', info: 'Salle R+2 Aile Ouest (nom à définir)' },
+                    { id: 'r2_wo2', wing: 'west', label: 'Salle ?', x: 10, y: 62, w: 62, h: 46, kind: 'special', info: 'Salle R+2 Aile Ouest (nom à définir)' },
+                    { id: 'r2_wo4', wing: 'west', label: 'Salle ?', x: 10, y: 114, w: 62, h: 78, kind: 'special', info: 'Salle R+2 Aile Ouest (nom à définir)' },
+                    { id: 'r2_wo3', wing: 'west', label: 'Salle ?', x: 92, y: 10, w: 64, h: 46, kind: 'special', info: 'Salle R+2 Aile Ouest (nom à définir)' },
+                    { id: 'r2_esc_o', wing: 'west', label: 'Esc. / Asc.', x: 96, y: 66, w: 54, h: 76, kind: 'stairs', info: 'Escalier principal & ascenseur · R+2' },
+                    { id: 'r2_wc_o', label: 'WC 🚻', x: 176, y: 40, w: 40, h: 66, kind: 'wc', info: 'Toilettes Ouest · R+2' },
+                    { id: 'admin1', label: 'Administration', sub: 'Bureaux & Scolarité', x: 222, y: 40, w: 186, h: 66, kind: 'admin', info: 'Pôle Administration & Scolarité · R+2 Nord' },
+                    { id: 'admin2', label: 'Administration', sub: 'Direction & Pilotes', x: 414, y: 40, w: 122, h: 66, kind: 'admin', info: 'Pôle Direction & Pilotes · R+2 Nord' },
+                    { id: 'r2_30', label: '30 - R+2 (temp.)', x: 200, y: 144, w: 62, h: 66, info: 'Salle R+2 Sud (numéro temporaire)' },
+                    { id: 'r2_32', label: '32 - R+2 (temp.)', x: 268, y: 144, w: 62, h: 66, info: 'Salle R+2 Sud (numéro temporaire)' },
+                    { id: 'r2_pause', label: 'Pause Employés', sub: 'Ex-Salle 5', x: 336, y: 144, w: 62, h: 66, kind: 'special', info: 'Salle de pause pour les employés · R+2 Sud' },
+                    { id: 'r2_terrasse', label: 'Terrasse 🌿', sub: 'Extérieur', x: 404, y: 144, w: 132, h: 66, kind: 'terrace', info: 'Terrasse extérieure · R+2 Sud-Est' },
+                    { id: 'r2_esc_e', label: 'Esc. Est', x: 544, y: 78, w: 40, h: 58, kind: 'stairs', info: 'Escalier Est · R+2' },
+                ]
+            }
+        };
+
+        mountEl.innerHTML = `
+            <section class="cesi-map-section">
+                <h3 class="section-title">${svg('pin')} Plan 3D du Campus — CESI Pau</h3>
+                <div class="cesi-map-card">
+                    <div class="cesi-map-bar">
+                        <div class="cesi-map-tabs">
+                            <button type="button" class="cesi-map-tab active" data-floor="RDC">RDC</button>
+                            <button type="button" class="cesi-map-tab" data-floor="R+1">R+1</button>
+                            <button type="button" class="cesi-map-tab" data-floor="R+2">R+2</button>
+                            <button type="button" class="cesi-map-tab" data-floor="ALL">Vue 3D (3 étages)</button>
+                        </div>
+                        <button type="button" class="cesi-map-status" id="cesi-map-status" title="Centrer sur la salle du cours">
+                            <span class="dot"></span><span id="cesi-map-status-txt">Chargement du cours…</span>
+                        </button>
+                        <div class="cesi-map-tabs">
+                            <button type="button" class="cesi-map-tab" id="cesi-3d-zout" title="Dézoomer">−</button>
+                            <button type="button" class="cesi-map-tab" id="cesi-3d-zin" title="Zoomer">+</button>
+                            <button type="button" class="cesi-map-tab" id="cesi-3d-reset" title="Réinitialiser la vue">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div id="cesi-3d-stage">
+                        <div id="cesi-3d-world"></div>
+                        <div class="cesi-map-hud">
+                            <span class="cesi-map-hint">🖱️ Glisser pour tourner en 3D · Molette pour zoomer · Cliquer sur une salle</span>
+                        </div>
+                        <div class="cesi-map-detail" id="cesi-map-detail" hidden></div>
+                    </div>
+                </div>
+            </section>`;
+
+        const stage = mountEl.querySelector('#cesi-3d-stage');
+        const world = mountEl.querySelector('#cesi-3d-world');
+        const detail = mountEl.querySelector('#cesi-map-detail');
+        const statusBtn = mountEl.querySelector('#cesi-map-status');
+        const statusTxt = mountEl.querySelector('#cesi-map-status-txt');
+
+        let curFloor = 'RDC', activeTarget = null, rotX = 52, rotZ = -18, scale = 0.96;
+        const applyCam = () => { world.style.transform = `scale(${scale}) rotateX(${rotX}deg) rotateZ(${rotZ}deg)`; };
+
+        const matchRooms = (rawPlace) => {
+            if (!rawPlace) return null;
+            const full = String(rawPlace).toLowerCase().trim();
+            const defaultFloor = full.includes('r+2') ? 'R+2' : full.includes('r+1') ? 'R+1' : 'RDC';
+            const parts = full.split(/[,/;|]+|\s+\+\s+/).map((p) => p.trim()).filter(Boolean);
+            const roomIds = [];
+            let floor = defaultFloor;
+            const matchOne = (seg) => {
+                const f = seg.includes('r+2') ? 'R+2' : seg.includes('r+1') ? 'R+1' : defaultFloor;
+                const candidates = FLOORS[f]?.rooms || [];
+                let hit = candidates.find((r) => r.label.toLowerCase() === seg) || candidates.find((r) => seg.includes(r.label.toLowerCase()));
+                if (!hit) {
+                    const cleanSeg = seg.replace(/r\s*\+\s*\d+/gi, ' ');
+                    const nums = [...cleanSeg.matchAll(/\b(\d{1,2})\b/g)].map((m) => m[1]);
+                    const isAtelier = cleanSeg.includes('atelier');
+                    const hits = [];
+                    for (const n of nums) {
+                        const re = new RegExp(`\\b${n}\\b`);
+                        const h = candidates.find((r) => (isAtelier || !r.label.toLowerCase().includes('atelier')) && re.test(r.label.toLowerCase().replace(/r\s*\+\s*\d+/gi, ' ')));
+                        if (h) hits.push({ f, id: h.id });
+                    }
+                    if (hits.length) return hits;
+                }
+                if (!hit) {
+                    for (const fk of Object.keys(FLOORS)) {
+                        hit = FLOORS[fk].rooms.find((r) => seg.includes(r.label.toLowerCase()));
+                        if (hit) return [{ f: fk, id: hit.id }];
+                    }
+                }
+                return hit ? [{ f, id: hit.id }] : [];
+            };
+            for (const part of (parts.length ? parts : [full])) {
+                for (const res of matchOne(part)) {
+                    if (!roomIds.length) floor = res.f;
+                    if (res.f === floor && !roomIds.includes(res.id)) roomIds.push(res.id);
+                }
+            }
+            return { floor, roomIds };
+        };
+
+        const showDetail = (room, floorKey) => {
+            if (!room) { detail.hidden = true; return; }
+            const isTarget = activeTarget && activeTarget.roomIds.includes(room.id) && activeTarget.floor === floorKey;
+            const titlePlace = isTarget && activeTarget.roomIds.length > 1 ? activeTarget.rawPlace : room.label;
+            detail.hidden = false;
+            detail.innerHTML = isTarget
+                ? `<strong>${esc(titlePlace)} (${esc(floorKey)})</strong><div>${esc(activeTarget.title)}</div><div class="sub">${esc(activeTarget.time)}${activeTarget.teacher ? ' · ' + esc(activeTarget.teacher) : ''}</div>`
+                : `<strong>${esc(room.label)} (${esc(floorKey)})</strong><div class="sub">${esc(room.info || 'Campus CESI Pau')}</div>`;
+        };
+
+        const buildFloor = (floorKey, zOffset) => {
+            const f = FLOORS[floorKey];
+            const renderRoom = (r) => {
+                const isAct = activeTarget && activeTarget.floor === floorKey && activeTarget.roomIds.includes(r.id);
+                const isPin = isAct && activeTarget.roomIds[0] === r.id;
+                const cls = ['m3d-room', r.kind ? `is-${r.kind}` : '', isAct ? 'is-active' : '', isAct && activeTarget.live ? 'is-live' : ''].filter(Boolean).join(' ');
+                return `
+                    <div class="${cls}" data-floor="${esc(floorKey)}" data-room-id="${esc(r.id)}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;">
+                        <div class="m3d-face m3d-front"></div><div class="m3d-face m3d-back"></div>
+                        <div class="m3d-face m3d-left"></div><div class="m3d-face m3d-right"></div>
+                        <div class="m3d-face m3d-top"><span>${esc(r.label)}</span>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</div>
+                        ${isPin ? `<div class="m3d-pin">${activeTarget.live ? '● EN COURS' : '📍 COURS'}</div>` : ''}
+                    </div>`;
+            };
+            const westHtml = f.rooms.filter((r) => r.wing === 'west').map(renderRoom).join('');
+            const eastHtml = f.rooms.filter((r) => r.wing === 'east').map(renderRoom).join('');
+            const centerHtml = f.rooms.filter((r) => !r.wing).map(renderRoom).join('');
+            return `
+                <div class="m3d-floor" style="transform: translateZ(${zOffset}px);">
+                    <div class="m3d-slab m3d-slab-west"><div class="m3d-corridor-hall"></div><div class="m3d-corridor-wl"></div><div class="m3d-corridor-wr"></div>${westHtml}</div>
+                    <div class="m3d-slab m3d-slab-center"></div>
+                    ${f.hasEast ? `<div class="m3d-slab m3d-slab-east">${eastHtml}</div>` : ''}
+                    <span class="m3d-floor-tag">${esc(f.label)}</span><span class="m3d-compass">NORD ↑</span>
+                    <div class="m3d-corridor">COULOIR CENTRAL</div>${f.hasEast ? '<div class="m3d-corridor-e"></div>' : ''}
+                    ${floorKey === 'RDC' ? '<span class="m3d-entrance">ENTRÉE SUD</span>' : ''}${centerHtml}
+                </div>`;
+        };
+
+        const renderWorld = () => {
+            mountEl.querySelectorAll('.cesi-map-tab[data-floor]').forEach((b) => b.classList.toggle('active', b.dataset.floor === curFloor));
+            world.innerHTML = curFloor === 'ALL'
+                ? buildFloor('RDC', -70) + buildFloor('R+1', 25) + buildFloor('R+2', 120)
+                : buildFloor(curFloor, 0);
+            applyCam();
+        };
+
+        const selectCourse = (info, autoSwitch = true) => {
+            const m = matchRooms(info.place);
+            activeTarget = { floor: m ? m.floor : 'RDC', roomIds: m ? m.roomIds : [], title: info.title, time: info.time, teacher: info.teacher || '', live: !!info.live, rawPlace: info.place };
+            if (autoSwitch && curFloor !== 'ALL') curFloor = activeTarget.floor;
+            statusBtn.classList.toggle('is-live', activeTarget.live);
+            statusTxt.textContent = `${activeTarget.live ? 'EN COURS' : 'PROCHAIN'} : ${info.place}`;
+            renderWorld();
+            const rObj = (FLOORS[activeTarget.floor]?.rooms || []).find((x) => activeTarget.roomIds.includes(x.id));
+            if (rObj) showDetail(rObj, activeTarget.floor);
+        };
+
+        const updateFromItems = (rawItems) => {
+            const now = new Date();
+            const items = (rawItems || []).slice().sort((a, b) => a.startD - b.startD);
+            const liveCourse = items.find((c) => now >= c.startD && now < c.endD);
+            const nextCourse = liveCourse || items.find((c) => c.endD > now);
+            if (nextCourse) {
+                selectCourse({ place: nextCourse.place, title: nextCourse.title, time: nextCourse.allDay ? 'Journée' : `${nextCourse.start} - ${nextCourse.end}`, teacher: nextCourse.teacher, live: !!liveCourse }, true);
+            } else {
+                activeTarget = null;
+                statusBtn.classList.remove('is-live');
+                statusTxt.textContent = 'Aucun cours à venir';
+                renderWorld();
+            }
+        };
+
+        let drag = null, rafId = 0;
+        const scheduleCam = () => { if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; applyCam(); }); };
+        stage.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('.m3d-room')) return;
+            drag = { x: e.clientX, y: e.clientY, rx: rotX, rz: rotZ };
+            stage.classList.add('is-dragging');
+            stage.setPointerCapture?.(e.pointerId);
+        });
+        stage.addEventListener('pointermove', (e) => {
+            if (!drag) return;
+            rotZ = drag.rz - (e.clientX - drag.x) * 0.35;
+            rotX = Math.max(15, Math.min(78, drag.rx - (e.clientY - drag.y) * 0.3));
+            scheduleCam();
+        });
+        const endDrag = () => { drag = null; stage.classList.remove('is-dragging'); };
+        stage.addEventListener('pointerup', endDrag);
+        stage.addEventListener('pointercancel', endDrag);
+        window.addEventListener('wheel', (e) => {
+            if (!e.target || !e.target.closest || !e.target.closest('#cesi-3d-stage')) return;
+            e.preventDefault(); e.stopPropagation();
+            const dy = e.deltaY || (e.wheelDeltaY ? -e.wheelDeltaY : 0);
+            if (!dy) return;
+            const step = e.deltaMode === 1 ? -dy * 0.05 : -dy * 0.002;
+            const delta = Math.abs(step) > 0.01 ? Math.max(-0.2, Math.min(0.2, step)) : -Math.sign(dy) * 0.08;
+            scale = Math.max(0.55, Math.min(2.2, scale + delta));
+            applyCam();
+        }, { passive: false, capture: true });
+        world.addEventListener('click', (e) => {
+            const rmEl = e.target.closest('.m3d-room');
+            if (!rmEl) return;
+            const fk = rmEl.dataset.floor, rid = rmEl.dataset.roomId;
+            const rObj = (FLOORS[fk]?.rooms || []).find((x) => x.id === rid);
+            if (rObj) showDetail(rObj, fk);
+        });
+        mountEl.querySelectorAll('.cesi-map-tab[data-floor]').forEach((b) => b.addEventListener('click', () => { curFloor = b.dataset.floor; renderWorld(); }));
+        mountEl.querySelector('#cesi-3d-zin')?.addEventListener('click', () => { scale = Math.min(2.2, scale + 0.12); applyCam(); });
+        mountEl.querySelector('#cesi-3d-zout')?.addEventListener('click', () => { scale = Math.max(0.55, scale - 0.12); applyCam(); });
+        mountEl.querySelector('#cesi-3d-reset')?.addEventListener('click', () => { rotX = 52; rotZ = -18; scale = 0.96; applyCam(); });
+        statusBtn?.addEventListener('click', () => { if (activeTarget) { curFloor = activeTarget.floor; rotX = 52; rotZ = -18; scale = 1.04; renderWorld(); } });
+        renderWorld();
+        return { updateFromItems, selectCourse };
+    };
     const withInstantTheme = (docs, fn) => {
         const els = docs.map((d) => d?.documentElement).filter(Boolean);
         els.forEach((el) => el.classList.add('cesi-theme-switching'));
@@ -799,6 +1136,8 @@
         .access-icon-container img { width: 26px; height: 26px; object-fit: contain; }
         .access-title { font-size: .7rem; font-weight: 700; color: var(--c-ink); text-transform: uppercase; letter-spacing: .25px; line-height: 1.25; }
 
+        ${CAMPUS_3D_CSS}
+
         #cesi-footer { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 24px; padding: 18px 20px; background: var(--c-card); border-top: 1px solid var(--c-line); }
         #cesi-footer a { color: var(--c-muted); font-size: .78rem; font-weight: 600; transition: color .15s; }
         #cesi-footer a:hover { color: var(--c-ink); text-decoration: underline; }
@@ -917,7 +1256,7 @@
                     const done = now >= c.endD;
                     const cls = live ? ' is-live' : done ? ' is-done' : '';
                     return `
-                        <div class="edt-course-item${cls}">
+                        <div class="edt-course-item${cls}" style="cursor:pointer" data-room="${esc(c.place)}" data-title="${esc(c.title)}" data-time="${esc(c.allDay ? 'Journée' : `${c.start} - ${c.end}`)}" data-teacher="${esc(c.teacher)}" data-live="${live ? '1' : '0'}">
                             <span class="course-time">${c.allDay ? 'Journée' : `${esc(c.start)} - ${esc(c.end)}`}</span>
                             <div class="course-info">
                                 <h5 class="course-title">${esc(c.title)}</h5>
@@ -937,7 +1276,8 @@
                     </div>`;
             }).join('');
         };
-        const paintEdt = () => { const box = document.getElementById('cesi-edt-container'); if (box) box.innerHTML = renderEdt(); };
+        let updateCampusMap = () => {};
+        const paintEdt = () => { const box = document.getElementById('cesi-edt-container'); if (box) box.innerHTML = renderEdt(); updateCampusMap(); };
 
         /* ---------- 3. Gabarits ---------- */
         const linkBtn = (l, icon) => `
@@ -1031,6 +1371,8 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="cesi-home-map"></div>
             </main>
 
             <footer id="cesi-footer">
@@ -1045,6 +1387,22 @@
         document.body.innerHTML = '';
         document.body.appendChild(app);
         removeClass('cesi-loading');
+
+        const campus3D = mountCampus3D(document.getElementById('cesi-home-map'));
+        updateCampusMap = () => campus3D.updateFromItems(edtState.items);
+        updateCampusMap();
+        document.getElementById('cesi-edt-container')?.addEventListener('click', (e) => {
+            const item = e.target.closest('.edt-course-item');
+            if (!item) return;
+            campus3D.selectCourse({
+                place: item.dataset.room,
+                title: item.dataset.title,
+                time: item.dataset.time,
+                teacher: item.dataset.teacher,
+                live: item.dataset.live === '1'
+            }, true);
+            document.querySelector('.cesi-map-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
 
         /* ---------- 4. Données asynchrones ---------- */
         const avatar = document.getElementById('cesi-avatar');
@@ -1536,6 +1894,8 @@
             .live-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #16a34a; animation: cesiPulse 1.4s infinite; }
             @keyframes cesiPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
             .edt-empty { background: var(--c-soft); border: 1px dashed var(--c-line-strong); border-radius: 10px; padding: 16px 10px; text-align: center; color: var(--c-muted); font-size: .78rem; }
+            #cesi-week-grid .edt-course-item { cursor: pointer; }
+            ${CAMPUS_3D_CSS}
             @media (max-width: 1050px) {
                 #cesi-week-grid { grid-template-columns: 1fr; }
                 .wk-col { border-right: 0; border-bottom: 1px solid var(--c-line); }
@@ -1693,9 +2053,11 @@
                         <span class="cesi-week-pill" id="cesi-wk-label">Chargement...</span>
                     </div>
                     <div id="cesi-week-grid"></div>
+                    <div id="cesi-week-map"></div>
                 `;
                 if (calWrap) calWrap.after(host);
                 else (document.querySelector('#sans_encadres, #page, main') || document.body).appendChild(host);
+                const weekMap = mountCampus3D(document.getElementById('cesi-week-map'));
 
                 const pad = (n) => String(n).padStart(2, '0');
                 const dk = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -1764,7 +2126,7 @@
                                 const live = now >= c.startD && now < c.endD;
                                 const done = now >= c.endD;
                                 return `
-                                    <div class="edt-course-item${live ? ' is-live' : done ? ' is-done' : ''}">
+                                    <div class="edt-course-item${live ? ' is-live' : done ? ' is-done' : ''}" data-room="${esc(c.place)}" data-title="${esc(c.title)}" data-time="${esc(c.allDay ? 'Journée' : `${c.start} - ${c.end}`)}" data-teacher="${esc(c.teacher)}" data-live="${live ? '1' : '0'}">
                                         <div class="wk-evt-top">
                                             <span class="course-time">${c.allDay ? 'Journée' : `${esc(c.start)} - ${esc(c.end)}`}</span>
                                             ${live ? '<span class="live-pill">EN COURS</span>' : ''}
@@ -1786,12 +2148,25 @@
                                     <div class="wk-col-body">${listHtml}</div>
                                 </div>`;
                         }).join('');
+                        weekMap.updateFromItems(items);
                     } catch (e) {
                         console.warn('[CESI redesign] Week EDT', e);
                         grid.innerHTML = '<div class="edt-empty" style="grid-column:1/-1">Impossible de charger l\'emploi du temps.</div>';
                     }
                 };
 
+                document.getElementById('cesi-week-grid').addEventListener('click', (e) => {
+                    const item = e.target.closest('.edt-course-item');
+                    if (!item) return;
+                    weekMap.selectCourse({
+                        place: item.dataset.room,
+                        title: item.dataset.title,
+                        time: item.dataset.time,
+                        teacher: item.dataset.teacher,
+                        live: item.dataset.live === '1'
+                    }, true);
+                    document.querySelector('#cesi-week-map .cesi-map-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
                 document.getElementById('cesi-wk-today').addEventListener('click', () => { weekOffset = 0; renderWeek(); });
                 document.getElementById('cesi-wk-prev').addEventListener('click', () => { weekOffset -= 1; renderWeek(); });
                 document.getElementById('cesi-wk-next').addEventListener('click', () => { weekOffset += 1; renderWeek(); });
