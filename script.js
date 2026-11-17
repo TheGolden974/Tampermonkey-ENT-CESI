@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      23.8
+// @version      23.9
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1651,7 +1651,7 @@
         }
 
         /* =========== Structure : barre latérale | contenu | sommaire =========== */
-        #scn-shell { display: grid; grid-template-columns: var(--side) minmax(0, 1fr) var(--toc); min-height: 100vh; }
+        #scn-shell { display: grid; grid-template-columns: var(--side) minmax(0, 1fr) var(--toc); grid-template-rows: var(--bar) 1fr; min-height: 100vh; }
         #scn-shell.no-toc { grid-template-columns: var(--side) minmax(0, 1fr); }
         #scn-shell.collapsed-side { grid-template-columns: 0 minmax(0, 1fr) var(--toc); }
         #scn-shell.collapsed-side.no-toc { grid-template-columns: 0 minmax(0, 1fr); }
@@ -1662,6 +1662,7 @@
 
         /* ---------- Barre latérale ---------- */
         #scn-side {
+            grid-column: 1; grid-row: 1 / -1;
             position: sticky; top: 0; align-self: start; height: 100vh; z-index: 120;
             display: flex; flex-direction: column; background: var(--card); border-right: 1px solid var(--line);
             transition: transform .22s ease;
@@ -1738,9 +1739,10 @@
         html.scn #outSec :is(a, span, div):hover, html.scn #outSec :is(a, span, div).scn-active { color: var(--ink) !important; background: var(--soft) !important; font-weight: 700 !important; }
 
         /* ---------- Colonne centrale ---------- */
-        #scn-center { min-width: 0; display: flex; flex-direction: column; }
+        #scn-center { grid-column: 2; grid-row: 2; min-width: 0; display: flex; flex-direction: column; }
         ${BRAND_CSS}
         #scn-bar {
+            grid-column: 2 / -1; grid-row: 1;
             position: sticky; top: 0; z-index: 100; height: var(--bar); display: flex; align-items: center; gap: 12px; padding: 0 24px;
             background: rgba(244,245,247,.85);
             backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
@@ -1765,14 +1767,14 @@
         .scn-btn svg { width: 17px; height: 17px; fill: currentColor; }
         .scn-btn .sun { display: none; } html.scn-dark .scn-btn .sun { display: block; } html.scn-dark .scn-btn .moon { display: none; }
 
-        html.scn main, html.scn #main { flex: 1 0 auto; margin: 0 !important; padding: 24px 0 56px !important; background: transparent !important; position: static !important; }
-        html.scn .case { max-width: 928px; margin: 0 auto !important; padding: 0 24px !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
-        html.scn #content { margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+        html.scn main, html.scn #main { flex: 1 0 auto; width: 100% !important; margin: 0 !important; padding: 24px 0 56px !important; background: transparent !important; position: static !important; }
+        html.scn .case { width: 100% !important; max-width: 928px !important; margin: 0 auto !important; padding: 0 24px !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; box-sizing: border-box !important; }
+        html.scn #content { width: 100% !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
         html.scn .case > :first-child, html.scn #content > :first-child { margin-top: 0 !important; padding-top: 0 !important; }
-        html.scn section { max-width: 880px; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px; box-shadow: var(--sh-sm); }
+        html.scn section { width: 100% !important; max-width: 880px !important; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px; box-shadow: var(--sh-sm); box-sizing: border-box !important; }
         html.scn section:last-child { margin-bottom: 0 !important; }
-        html.scn section section { max-width: none; margin: 16px 0 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
-        html.scn section.scn-card-sec { max-width: 880px; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px !important; box-shadow: var(--sh-sm) !important; }
+        html.scn section section { max-width: none !important; margin: 16px 0 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+        html.scn section.scn-card-sec { width: 100% !important; max-width: 880px !important; margin: 0 auto 16px !important; padding: 24px 28px !important; background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px !important; box-shadow: var(--sh-sm) !important; box-sizing: border-box !important; }
         html.scn section:empty { display: none !important; }
         html.scn #footer { padding: 20px !important; text-align: center; opacity: .5; background: transparent !important; }
         html.scn-dark #footer img { filter: invert(1); }
@@ -1811,9 +1813,10 @@
             background-color: var(--soft) !important; border-color: var(--line) !important;
         }
 
+        html.scn #main .metas:empty { display: none !important; }
         html.scn .scn-meta-box,
         html.scn #main .metas {
-            max-width: 880px; margin: 0 auto 16px !important; padding: 14px 20px !important;
+            width: 100% !important; max-width: 880px !important; margin: 0 auto 16px !important; padding: 14px 20px !important; box-sizing: border-box !important;
             background: var(--card) !important; background-color: var(--card) !important;
             border: 1px solid var(--line) !important; border-radius: 14px !important; box-shadow: var(--sh-sm) !important;
             color: var(--text) !important; text-align: left !important;
@@ -1834,14 +1837,25 @@
         html.scn #main .metas .person :is(strong, b, .name) { color: var(--ink) !important; font-weight: 700 !important; }
 
         /* Titre de page */
-        html.scn .scn-dup { display: none !important; }
+        html.scn h1.case_ti:empty { display: none !important; }
         html.scn h1.case_ti {
-            max-width: 880px; margin: 0 auto 20px !important; padding: 0 0 12px !important;
+            position: static !important; width: 100% !important; height: auto !important; min-height: 0 !important; max-width: 880px !important;
+            margin: 0 auto 20px !important; padding: 0 0 12px !important; box-sizing: border-box !important;
             border-bottom: 2px solid var(--acc) !important; background: none !important; box-shadow: none !important;
             color: var(--ink) !important; font-size: 2.1rem !important; font-weight: 900 !important;
             letter-spacing: -.5px !important; line-height: 1.2 !important; text-align: left !important; text-transform: none !important;
+            text-indent: 0 !important; overflow: visible !important;
         }
-        html.scn h1.case_ti * { color: inherit !important; background: none !important; padding: 0 !important; margin: 0 !important; font-size: inherit !important; }
+        html.scn h1.case_ti * {
+            position: static !important; display: inline !important; width: auto !important; height: auto !important;
+            color: inherit !important; background: none !important; padding: 0 !important; margin: 0 !important;
+            font-size: inherit !important; text-indent: 0 !important; opacity: 1 !important; visibility: visible !important;
+        }
+        html.scn .scn-banner-img {
+            display: block !important; width: 100% !important; max-width: 880px !important; height: auto !important;
+            margin: 0 auto 16px !important; border-radius: 14px !important; border: 1px solid var(--line) !important;
+            box-shadow: var(--sh-sm) !important; overflow: hidden !important;
+        }
 
         /* Titres de section H2 */
         html.scn h2, html.scn .part_ti, html.scn .style-20 {
@@ -1849,6 +1863,7 @@
             margin: 1.6rem 0 1rem !important; padding: 0 0 0 16px !important; position: relative !important;
             line-height: 1.3 !important; letter-spacing: -.3px !important; display: block !important;
         }
+        html.scn .scn-dup, html.scn h2.scn-dup, html.scn .part_ti.scn-dup { display: none !important; }
         html.scn h2::after, html.scn .part_ti::after, html.scn .style-20::after {
             content: '' !important; position: absolute !important; left: 0 !important; top: 3px !important; bottom: 3px !important;
             width: 4px !important; border-radius: 2px !important; background: var(--acc) !important;
@@ -1972,6 +1987,7 @@
 
         /* ---------- Sommaire « Sur cette page » (TOC) ---------- */
         #scn-toc {
+            grid-column: 3; grid-row: 2;
             position: sticky; top: var(--bar); align-self: start; max-height: calc(100vh - var(--bar));
             overflow-y: auto; padding: 28px 18px 28px 12px; font-size: .78rem;
         }
@@ -2204,18 +2220,18 @@
                 <div class="scn-side-label">Modules</div>
                 <div class="scn-side-scroll" id="scn-side-scroll"></div>
             </aside>
-            <div id="scn-center">
-                <div id="scn-bar">
-                    <button type="button" class="scn-btn" id="scn-menu" aria-label="Menu">${svg('menu')}</button>
-                    <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
-                    <div id="scn-crumb">
-                        <span>${esc(courseSub || courseTitle)}</span>
-                        ${breadcrumbModule ? `<span class="sep">/</span><span class="${breadcrumbSub ? '' : 'cur'}">${esc(breadcrumbModule)}</span>` : ''}
-                        ${breadcrumbSub ? `<span class="sep">/</span><span class="cur">${esc(breadcrumbSub)}</span>` : ''}
-                    </div>
-                    <button type="button" class="scn-btn" id="scn-theme" title="Mode sombre / clair" aria-label="Basculer le thème">${svg('moon', 'moon')}${svg('sun', 'sun')}</button>
-                    <div id="scn-progress"></div>
+            <div id="scn-bar">
+                <button type="button" class="scn-btn" id="scn-menu" aria-label="Menu">${svg('menu')}</button>
+                <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
+                <div id="scn-crumb">
+                    <span>${esc(courseSub || courseTitle)}</span>
+                    ${breadcrumbModule ? `<span class="sep">/</span><span class="${breadcrumbSub ? '' : 'cur'}">${esc(breadcrumbModule)}</span>` : ''}
+                    ${breadcrumbSub ? `<span class="sep">/</span><span class="cur">${esc(breadcrumbSub)}</span>` : ''}
                 </div>
+                <button type="button" class="scn-btn" id="scn-theme" title="Mode sombre / clair" aria-label="Basculer le thème">${svg('moon', 'moon')}${svg('sun', 'sun')}</button>
+                <div id="scn-progress"></div>
+            </div>
+            <div id="scn-center">
                 <main id="main">
                     <div class="case"></div>
                 </main>
@@ -2314,7 +2330,7 @@
         }).filter((x) => x.text && x.text.length < 80);
 
         let tocLinks = [];
-        if (tocItems.length >= 2) {
+        if (tocItems.length >= 1) {
             toc.innerHTML = `<h4>Sur cette page</h4><ol>${tocItems.map((t, i) =>
                 `<li><a href="#${esc(t.target.id)}" class="l${t.level}" data-i="${i}">${esc(t.text)}</a></li>`).join('')}</ol>`;
             tocLinks = $$('a', toc).map((a) => ({ a, el: tocItems[+a.dataset.i].target }));
@@ -2373,18 +2389,17 @@
                 <div class="scn-side-label">Modules</div>
                 <div class="scn-side-scroll" id="scn-side-scroll"></div>
             </aside>
-            <div id="scn-center">
-                <div id="scn-bar">
-                    <button type="button" class="scn-btn" id="scn-menu" aria-label="Menu">${svg('menu')}</button>
-                    <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
-                    <div id="scn-crumb">
-                        <span>${esc(courseSub || courseTitle)}</span>
-                        ${moduleName ? `<span class="sep">/</span><span class="cur">${esc(moduleName)}</span>` : ''}
-                    </div>
-                    <button type="button" class="scn-btn" id="scn-theme" title="Mode sombre / clair" aria-label="Basculer le thème">${svg('moon', 'moon')}${svg('sun', 'sun')}</button>
-                    <div id="scn-progress"></div>
+            <div id="scn-bar">
+                <button type="button" class="scn-btn" id="scn-menu" aria-label="Menu">${svg('menu')}</button>
+                <a href="https://ent.cesi.fr/accueil-apprenant" target="_top" class="cesi-brand-link" aria-label="Accueil ENT CESI">${cesiBrand()}</a>
+                <div id="scn-crumb">
+                    <span>${esc(courseSub || courseTitle)}</span>
+                    ${moduleName ? `<span class="sep">/</span><span class="cur">${esc(moduleName)}</span>` : ''}
                 </div>
+                <button type="button" class="scn-btn" id="scn-theme" title="Mode sombre / clair" aria-label="Basculer le thème">${svg('moon', 'moon')}${svg('sun', 'sun')}</button>
+                <div id="scn-progress"></div>
             </div>
+            <div id="scn-center"></div>
             <nav id="scn-toc" aria-label="Sur cette page"></nav>
             <div id="scn-scrim"></div>`;
 
@@ -2436,6 +2451,13 @@
         if (footer) center.appendChild(footer);
         document.body.insertBefore(shell, document.body.firstChild);
 
+        if (caseTi) {
+            caseTi.querySelectorAll('img').forEach((img) => {
+                img.classList.add('scn-banner-img');
+                caseTi.after(img);
+            });
+            if (!clean(caseTi.textContent)) caseTi.classList.add('scn-dup');
+        }
         const normTitle = (s) => clean(s).replace(/\s*-\s*/g, '-').toLowerCase();
         const caseTitleNorm = caseTi ? normTitle(caseTi.textContent) : '';
         if (caseTitleNorm) {
@@ -2445,8 +2467,10 @@
         }
         $$('#main section', shell).forEach((sec) => {
             const clone = sec.cloneNode(true);
-            clone.querySelectorAll('.scn-dup, section').forEach((el) => el.remove());
-            const hasContent = !!clean(clone.textContent) || !!clone.querySelector('img, svg, video, audio, iframe, canvas, table, input, button, object, embed');
+            clone.querySelectorAll('.scn-dup, section, [style*="display: none"], [style*="display:none"]').forEach((el) => el.remove());
+            const hasMedia = Array.from(sec.querySelectorAll('img, video, audio, iframe, canvas, table, input, button, object, embed'))
+                .some((m) => !m.closest('section') || m.closest('section') === sec ? (m.offsetWidth > 0 || m.offsetHeight > 0) : false);
+            const hasContent = !!clean(clone.textContent) || hasMedia;
             if (!hasContent) {
                 const nested = Array.from(sec.querySelectorAll(':scope section'));
                 if (nested.length) {
@@ -2553,15 +2577,15 @@
 
         const toc = shell.querySelector('#scn-toc');
         let tocN = 0;
-        const tocItems = $$('#content h2.part_ti, #content h3.part_ti, #content article.collapsed > a .collapsed_ti').map((el) => {
+        const tocItems = $$('#main :is(h2.part_ti, h3.part_ti, h4.part_ti, .hBk_ti, article.collapsed > a .collapsed_ti):not(.scn-dup)', shell).map((el) => {
             const target = el.matches('.collapsed_ti') ? el.closest('article.collapsed') : el;
             if (!target.id) target.id = `scn-t-${++tocN}`;
-            const level = el.matches('h2') ? 1 : el.matches('h3') ? 2 : 3;
+            const level = el.matches('h2') ? 1 : el.matches('h3.part_ti') ? 2 : 3;
             return { text: clean(el.textContent), target, level };
         }).filter((x) => x.text);
 
         let tocLinks = [];
-        if (tocItems.length >= 2) {
+        if (tocItems.length >= 1) {
             toc.innerHTML = `<h4>Sur cette page</h4><ol>${tocItems.map((t, i) =>
                 `<li><a href="#${esc(t.target.id)}" class="l${t.level}" data-i="${i}">${esc(t.text)}</a></li>`).join('')}</ol>`;
             tocLinks = $$('a', toc).map((a) => ({ a, el: tocItems[+a.dataset.i].target }));
