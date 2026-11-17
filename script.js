@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      25.0
+// @version      25.1
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -1480,32 +1480,66 @@
             }
             .cesi-info-banner strong { color: var(--c-ink); }
 
-            /* Mon emploi du temps */
-            .fc-toolbar { display: flex !important; align-items: center; justify-content: space-between; margin-bottom: 18px !important; }
-            .fc-toolbar h2 { border-left: 0 !important; padding-left: 0 !important; margin: 0 0 0 10px !important; display: inline-flex; align-items: center; }
-            .fc-title-header {
-                background: var(--c-accent) !important; color: #141413 !important; border-radius: 999px !important;
-                padding: 7px 16px !important; font-size: .9rem !important; font-weight: 800 !important; display: inline-block;
+            /* Mon emploi du temps (version semaine identique à l'accueil) */
+            .js-calendar__wrapper { display: none !important; }
+            #cesi-week-nav {
+                display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+                background: var(--c-card); border: 1px solid var(--c-line); border-radius: 14px;
+                padding: 12px 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm);
             }
-            .fc-view-container {
-                border-radius: 16px !important; overflow: hidden !important; border: 1px solid var(--c-line) !important; box-shadow: var(--shadow-md) !important;
+            .cesi-week-controls { display: flex; align-items: center; gap: 8px; }
+            .cesi-week-btn {
+                height: 36px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center;
+                background: var(--c-soft); border: 1px solid var(--c-line); border-radius: 9px;
+                color: var(--c-ink); font: 600 .84rem 'Inter', sans-serif; cursor: pointer; transition: all .15s;
             }
-            .fc-view, .fc-agenda-view, .fc-widget-content, .fc-widget-header, .fc-bg table, .fc-content-skeleton table {
-                background: var(--c-card) !important; border-color: var(--c-line) !important; color: var(--c-text) !important;
+            .cesi-week-btn:hover { border-color: var(--c-accent); color: var(--c-accent-ink); }
+            .cesi-week-pill {
+                background: var(--c-accent); color: #141413 !important; border-radius: 999px;
+                padding: 7px 16px; font-size: .85rem; font-weight: 800; letter-spacing: -.1px;
             }
-            .fc-bg, .fc-row .fc-bg, .fc-unthemed td, .fc-unthemed th, .fc-unthemed .fc-content,
-            .fc-view .fc-axis, .fc-view .fc-bg td, .fc-view .fc-bg th, .fc-view .fc-day-grid td.fc-axis,
-            .fc-axis::before, .fc-axis::after {
-                background: transparent !important; border-color: var(--c-line) !important;
+            #cesi-week-grid {
+                display: grid; grid-template-columns: repeat(var(--wk-cols, 5), minmax(0, 1fr));
+                background: var(--c-card); border: 1px solid var(--c-line); border-radius: 16px;
+                box-shadow: var(--shadow-md); overflow: hidden;
             }
-            .fc-day-header.fc-today { border-bottom: 3px solid var(--c-accent) !important; }
-            .fc-event { border-radius: 10px !important; border: 0 !important; padding: 6px 8px !important; box-shadow: 0 2px 6px rgba(0,0,0,.15) !important; }
-            .fc-nightly { background: var(--c-soft) !important; }
-            .fc-today, .fc-state-highlight { background: var(--c-accent-soft) !important; }
-            .fc-divider { background: var(--c-line) !important; border-color: var(--c-line) !important; }
-            .fc-toolbar button, .fc-button {
-                background: var(--c-card) !important; color: var(--c-ink) !important; border: 1px solid var(--c-line) !important;
-                border-radius: 9px !important; text-shadow: none !important; box-shadow: none !important; font-weight: 600 !important;
+            .wk-col { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--c-line); }
+            .wk-col:last-child { border-right: 0; }
+            .wk-col.is-today { background: rgba(251,226,22,.03); }
+            .wk-col-head {
+                padding: 14px 14px 12px; border-bottom: 2px solid var(--c-line); background: var(--c-soft);
+                display: flex; flex-direction: column; gap: 6px;
+            }
+            .wk-col.is-today .wk-col-head { background: var(--c-accent-soft); border-bottom-color: var(--c-accent); }
+            html.dark .wk-col.is-today .wk-col-head { background: rgba(251,226,22,.1); }
+            .wk-col-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+            .wk-col-day { font-size: .74rem; font-weight: 800; color: var(--c-muted); text-transform: uppercase; letter-spacing: .5px; }
+            .wk-col.is-today .wk-col-day { color: var(--c-accent-ink); }
+            .wk-col-date { font-size: 1.05rem; font-weight: 800; color: var(--c-ink); letter-spacing: -.3px; }
+            .wk-col-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+            .day-tag { background: var(--c-accent); color: #000 !important; font-size: .6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; letter-spacing: .4px; }
+            .day-tag.soft { background: var(--c-card); color: var(--c-muted) !important; border: 1px solid var(--c-line); }
+            .course-count { font-size: .68rem; color: var(--c-muted); font-weight: 600; }
+            .edt-course-item { display: flex; flex-direction: column; gap: 7px; padding: 10px 11px; background: var(--c-soft); border: 1px solid var(--c-line); border-radius: 10px; transition: all .15s ease; }
+            .edt-course-item:hover { background: var(--c-card); border-color: var(--c-accent); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+            .edt-course-item.is-live { background: var(--c-accent-soft); border-color: var(--c-accent); }
+            html.dark .edt-course-item.is-live { background: rgba(251,226,22,.12); border-color: #7a6600; }
+            .edt-course-item.is-done { opacity: .52; }
+            .edt-course-item.is-done .course-title { text-decoration: line-through; text-decoration-color: #94a3b8; }
+            .wk-evt-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+            .course-time { font-size: .75rem; font-weight: 700; color: var(--c-accent-ink) !important; background: var(--c-accent-soft); border: 1px solid #fef3c7; border-radius: 7px; padding: 3px 8px; font-variant-numeric: tabular-nums; }
+            html.dark .course-time { background: var(--c-card); border-color: var(--c-line); color: var(--c-accent-dark) !important; }
+            .course-title { margin: 0; font-size: .84rem; font-weight: 700; color: var(--c-ink); line-height: 1.3; }
+            .course-sub { display: flex; align-items: center; gap: 5px; margin: 0 !important; font-size: .73rem; color: var(--c-muted) !important; line-height: 1.3 !important; }
+            .course-sub svg { width: 12px; height: 12px; fill: currentColor; flex-shrink: 0; }
+            .live-pill { display: inline-flex; align-items: center; gap: 5px; font-size: .6rem; font-weight: 800; letter-spacing: .5px; color: #166534 !important; background: #dcfce7; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+            .live-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #16a34a; animation: cesiPulse 1.4s infinite; }
+            @keyframes cesiPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
+            .edt-empty { background: var(--c-soft); border: 1px dashed var(--c-line-strong); border-radius: 10px; padding: 16px 10px; text-align: center; color: var(--c-muted); font-size: .78rem; }
+            @media (max-width: 1050px) {
+                #cesi-week-grid { grid-template-columns: 1fr; }
+                .wk-col { border-right: 0; border-bottom: 1px solid var(--c-line); }
+                .wk-col:last-child { border-bottom: 0; }
             }
 
             /* Documents partagés & Fiches documents */
@@ -1642,6 +1676,126 @@
                 banner.innerHTML = `<span>ℹ️</span><div><strong>Carte étudiante française :</strong> la carte étudiante normale est disponible dans l'application <strong>Edusign &gt; Nom &gt; Mes cartes</strong>.</div>`;
                 if (h1) h1.after(banner);
                 else (document.querySelector('#page, main') || document.body).prepend(banner);
+            }
+
+            // Mon emploi du temps : vue semaine moderne alignée sur le tableau de bord
+            if (curPath.includes('mon-emploi-du-temps') && !document.getElementById('cesi-week-edt')) {
+                const calWrap = document.querySelector('.js-calendar__wrapper');
+                const host = document.createElement('div');
+                host.id = 'cesi-week-edt';
+                host.innerHTML = `
+                    <div id="cesi-week-nav">
+                        <div class="cesi-week-controls">
+                            <button type="button" class="cesi-week-btn" id="cesi-wk-today">Aujourd'hui</button>
+                            <button type="button" class="cesi-week-btn" id="cesi-wk-prev" aria-label="Semaine précédente">‹</button>
+                            <button type="button" class="cesi-week-btn" id="cesi-wk-next" aria-label="Semaine suivante">›</button>
+                        </div>
+                        <span class="cesi-week-pill" id="cesi-wk-label">Chargement...</span>
+                    </div>
+                    <div id="cesi-week-grid"></div>
+                `;
+                if (calWrap) calWrap.after(host);
+                else (document.querySelector('#sans_encadres, #page, main') || document.body).appendChild(host);
+
+                const pad = (n) => String(n).padStart(2, '0');
+                const dk = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+                const hm = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                const pd = (v) => {
+                    if (!v) return new Date();
+                    const s = String(v).trim().replace(' ', 'T');
+                    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+                    return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)) : new Date(s);
+                };
+                const isoWeek = (d) => {
+                    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                    t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+                    const y = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+                    return Math.ceil((((t - y) / 86400000) + 1) / 7);
+                };
+                let weekOffset = 0;
+
+                const renderWeek = async () => {
+                    const now = new Date();
+                    const todayKey = dk(now);
+                    const tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    const tomorrowKey = dk(tmr);
+                    const dow = (now.getDay() + 6) % 7; // 0 = lundi
+                    const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow + weekOffset * 7);
+                    const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+                    const nextMon = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 7);
+                    const fmtRange = `${mon.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} au ${sun.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                    document.getElementById('cesi-wk-label').textContent = `Semaine n°${isoWeek(mon)} — ${fmtRange}`;
+
+                    const grid = document.getElementById('cesi-week-grid');
+                    grid.innerHTML = '<div class="edt-empty" style="grid-column:1/-1">Chargement de l\'emploi du temps...</div>';
+                    try {
+                        const raw = await getJSON(`/api/seance/all?start=${dk(mon)}&end=${dk(nextMon)}`);
+                        const items = (Array.isArray(raw) ? raw : []).map((s) => {
+                            const start = pd(s.start), end = pd(s.end || s.start);
+                            const teacher = Array.isArray(s.intervenants)
+                                ? s.intervenants.map((x) => [x.prenom, x.nom].filter(Boolean).join(' ') || x.nomComplet || '').filter(Boolean).join(', ')
+                                : '';
+                            return {
+                                date: dk(start), startD: start, endD: end,
+                                start: hm(start), end: hm(end),
+                                allDay: String(s.allDay) === 'true',
+                                title: s.title || s.nomModule || s.matiere || 'Séance',
+                                place: (Array.isArray(s.salles) ? s.salles.map((x) => x.nomSalle).filter(Boolean).join(', ') : '') || 'Salle non précisée',
+                                teacher
+                            };
+                        });
+                        const groups = {};
+                        items.forEach((c) => { (groups[c.date] = groups[c.date] || []).push(c); });
+
+                        const days = [];
+                        for (let i = 0; i < 6; i++) {
+                            const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
+                            const k = dk(d);
+                            if (i < 5 || (groups[k] && groups[k].length)) days.push({ d, k });
+                        }
+                        grid.style.setProperty('--wk-cols', String(days.length));
+                        grid.innerHTML = days.map(({ d, k }) => {
+                            const courses = (groups[k] || []).slice().sort((a, b) => a.startD - b.startD);
+                            const tag = k === todayKey ? '<span class="day-tag">AUJOURD\'HUI</span>'
+                                : k === tomorrowKey ? '<span class="day-tag soft">DEMAIN</span>' : '';
+                            const wd = d.toLocaleDateString('fr-FR', { weekday: 'long' });
+                            const dt = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                            const listHtml = courses.length ? courses.map((c) => {
+                                const live = now >= c.startD && now < c.endD;
+                                const done = now >= c.endD;
+                                return `
+                                    <div class="edt-course-item${live ? ' is-live' : done ? ' is-done' : ''}">
+                                        <div class="wk-evt-top">
+                                            <span class="course-time">${c.allDay ? 'Journée' : `${esc(c.start)} - ${esc(c.end)}`}</span>
+                                            ${live ? '<span class="live-pill">EN COURS</span>' : ''}
+                                        </div>
+                                        <h5 class="course-title">${esc(c.title)}</h5>
+                                        <p class="course-sub">${svg('pin')}${esc(c.place)}</p>
+                                        ${c.teacher ? `<p class="course-sub">${svg('user')}${esc(c.teacher)}</p>` : ''}
+                                    </div>`;
+                            }).join('') : '<div class="edt-empty">Aucun cours</div>';
+                            return `
+                                <div class="wk-col${k === todayKey ? ' is-today' : ''}">
+                                    <div class="wk-col-head">
+                                        <div class="wk-col-top">
+                                            <span class="wk-col-day">${esc(wd)}</span>
+                                            ${tag || `<span class="course-count">${courses.length} cours</span>`}
+                                        </div>
+                                        <div class="wk-col-date">${esc(dt)}</div>
+                                    </div>
+                                    <div class="wk-col-body">${listHtml}</div>
+                                </div>`;
+                        }).join('');
+                    } catch (e) {
+                        console.warn('[CESI redesign] Week EDT', e);
+                        grid.innerHTML = '<div class="edt-empty" style="grid-column:1/-1">Impossible de charger l\'emploi du temps.</div>';
+                    }
+                };
+
+                document.getElementById('cesi-wk-today').addEventListener('click', () => { weekOffset = 0; renderWeek(); });
+                document.getElementById('cesi-wk-prev').addEventListener('click', () => { weekOffset -= 1; renderWeek(); });
+                document.getElementById('cesi-wk-next').addEventListener('click', () => { weekOffset += 1; renderWeek(); });
+                renderWeek();
             }
         });
     }
