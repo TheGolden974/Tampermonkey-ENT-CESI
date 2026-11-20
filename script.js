@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      26.0
+// @version      26.1
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -105,9 +105,38 @@
         expand: 'M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z',
         collapse: 'M7.41 18.59L8.83 20 12 16.83 15.17 20l1.41-1.41L12 14l-4.59 4.59zm9.18-13.18L15.17 4 12 7.17 8.83 4 7.41 5.41 12 10l4.59-4.59z',
         moon: 'M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z',
-        sun: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0z'
+        sun: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0z',
+        rocket: 'M12 2.5c3.5 2.4 5 6.3 5 10.2l2.3 2.3c.3.3.4.7.2 1.1l-1.5 3.1c-.2.5-.8.7-1.3.4l-2.6-1.4H9.9l-2.6 1.4c-.5.3-1.1.1-1.3-.4L4.5 16.1c-.2-.4-.1-.8.2-1.1L7 12.7c0-3.9 1.5-7.8 5-10.2zm0 5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z',
+        target: 'M12 2a10 10 0 1 0 10 10h-2a8 8 0 1 1-8-8V2zm0 4a6 6 0 1 0 6 6h-2a4 4 0 1 1-4-4V6zm0 4a2 2 0 1 0 2 2h-2v-2z'
     };
     const svg = (name, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true"><path d="${ICONS[name] || ICONS.link}"/></svg>`;
+    const getCourseKind = (title) => {
+        const t = String(title || '');
+        if (/prosit\s*aller/i.test(t)) return { id: 'aller', label: 'Prosit Aller', icon: 'rocket' };
+        if (/prosit\s*retour/i.test(t)) return { id: 'retour', label: 'Prosit Retour', icon: 'target' };
+        if (/travau?x?\s*personnels?\s*encadr[eé]s?|\btpe\b/i.test(t)) return { id: 'tpe', label: 'TPE', icon: 'school' };
+        if (/travail\s*(?:de|en)\s*groupe|\btdg\b/i.test(t)) return { id: 'groupe', label: 'Groupe', icon: 'group' };
+        return null;
+    };
+    const courseKindBadge = (kind) => kind
+        ? `<span class="course-kind-badge kind-${kind.id}" title="${esc(kind.label)}">${svg(kind.icon)}<span>${esc(kind.label)}</span></span>`
+        : '';
+    const COURSE_KIND_CSS = `
+        .course-kind-badge {
+            display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+            padding: 3px 8px; border-radius: 999px; font-size: .68rem; font-weight: 800;
+            letter-spacing: .2px; line-height: 1.1; white-space: nowrap;
+        }
+        .course-kind-badge svg { width: 12px; height: 12px; fill: currentColor; flex-shrink: 0; }
+        .course-kind-badge.kind-aller  { background: #dbeafe; color: #1d4ed8 !important; }
+        .course-kind-badge.kind-tpe    { background: #fef3c7; color: #b45309 !important; }
+        .course-kind-badge.kind-groupe { background: #f3e8ff; color: #7e22ce !important; }
+        .course-kind-badge.kind-retour { background: #dcfce7; color: #15803d !important; }
+        html.dark .course-kind-badge.kind-aller  { background: rgba(59,130,246,.2); color: #93c5fd !important; }
+        html.dark .course-kind-badge.kind-tpe    { background: rgba(245,158,11,.2); color: #fcd34d !important; }
+        html.dark .course-kind-badge.kind-groupe { background: rgba(168,85,247,.2); color: #d8b4fe !important; }
+        html.dark .course-kind-badge.kind-retour { background: rgba(34,197,94,.2); color: #86efac !important; }
+    `;
     const CESI_LOGO_URL = 'https://www.anrt.asso.fr/sites/default/files/styles/large/public/2024-03/CESI.png?itok=GJ29qFB-';
     const cesiBrand = () => `<span class="cesi-brand-wrap"><img class="cesi-brand-svg cesi-brand-img" src="${CESI_LOGO_URL}" alt="CESI École d'ingénieurs" /><img class="cesi-brand-svg cesi-brand-img cesi-brand-yellow" src="${CESI_LOGO_URL}" alt="" aria-hidden="true" /></span>`;
     const BRAND_CSS = `
@@ -1136,6 +1165,7 @@
         .access-icon-container img { width: 26px; height: 26px; object-fit: contain; }
         .access-title { font-size: .7rem; font-weight: 700; color: var(--c-ink); text-transform: uppercase; letter-spacing: .25px; line-height: 1.25; }
 
+        ${COURSE_KIND_CSS}
         ${CAMPUS_3D_CSS}
 
         #cesi-footer { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 24px; padding: 18px 20px; background: var(--c-card); border-top: 1px solid var(--c-line); }
@@ -1254,7 +1284,8 @@
                 const items = courses.map((c) => {
                     const live = now >= c.startD && now < c.endD;
                     const done = now >= c.endD;
-                    const cls = live ? ' is-live' : done ? ' is-done' : '';
+                    const kind = getCourseKind(c.title);
+                    const cls = (live ? ' is-live' : done ? ' is-done' : '') + (kind ? ` kind-${kind.id}` : '');
                     return `
                         <div class="edt-course-item${cls}" style="cursor:pointer" data-room="${esc(c.place)}" data-title="${esc(c.title)}" data-time="${esc(c.allDay ? 'Journée' : `${c.start} - ${c.end}`)}" data-teacher="${esc(c.teacher)}" data-live="${live ? '1' : '0'}">
                             <span class="course-time">${c.allDay ? 'Journée' : `${esc(c.start)} - ${esc(c.end)}`}</span>
@@ -1263,6 +1294,7 @@
                                 <p class="course-sub">${svg('pin')}${esc(c.place)}</p>
                                 ${c.teacher ? `<p class="course-sub">${svg('user')}${esc(c.teacher)}</p>` : ''}
                             </div>
+                            ${courseKindBadge(kind)}
                             ${live ? '<span class="live-pill">EN COURS</span>' : ''}
                         </div>`;
                 }).join('');
@@ -1895,7 +1927,9 @@
             @keyframes cesiPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
             .edt-empty { background: var(--c-soft); border: 1px dashed var(--c-line-strong); border-radius: 10px; padding: 16px 10px; text-align: center; color: var(--c-muted); font-size: .78rem; }
             #cesi-week-grid .edt-course-item { cursor: pointer; }
-            ${CAMPUS_3D_CSS}
+            ${COURSE_KIND_CSS}
+            ${COURSE_KIND_CSS}
+        ${CAMPUS_3D_CSS}
             @media (max-width: 1050px) {
                 #cesi-week-grid { grid-template-columns: 1fr; }
                 .wk-col { border-right: 0; border-bottom: 1px solid var(--c-line); }
@@ -2125,10 +2159,13 @@
                             const listHtml = courses.length ? courses.map((c) => {
                                 const live = now >= c.startD && now < c.endD;
                                 const done = now >= c.endD;
+                                const kind = getCourseKind(c.title);
+                                const kindCls = kind ? ` kind-${kind.id}` : '';
                                 return `
-                                    <div class="edt-course-item${live ? ' is-live' : done ? ' is-done' : ''}" data-room="${esc(c.place)}" data-title="${esc(c.title)}" data-time="${esc(c.allDay ? 'Journée' : `${c.start} - ${c.end}`)}" data-teacher="${esc(c.teacher)}" data-live="${live ? '1' : '0'}">
+                                    <div class="edt-course-item${live ? ' is-live' : done ? ' is-done' : ''}${kindCls}" data-room="${esc(c.place)}" data-title="${esc(c.title)}" data-time="${esc(c.allDay ? 'Journée' : `${c.start} - ${c.end}`)}" data-teacher="${esc(c.teacher)}" data-live="${live ? '1' : '0'}">
                                         <div class="wk-evt-top">
                                             <span class="course-time">${c.allDay ? 'Journée' : `${esc(c.start)} - ${esc(c.end)}`}</span>
+                                            ${courseKindBadge(kind)}
                                             ${live ? '<span class="live-pill">EN COURS</span>' : ''}
                                         </div>
                                         <h5 class="course-title">${esc(c.title)}</h5>
@@ -2522,6 +2559,20 @@
             html.scn .msgBox { font-family: 'Inter', system-ui, sans-serif !important; color: var(--ink) !important; }
             html.scn .msgBox > div { background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: 14px !important; box-shadow: var(--sh-md) !important; }
         `);
+            onReady(() => {
+                const frame = document.getElementById('contentFrame');
+                if (!frame) return;
+                const syncUrl = () => {
+                    try {
+                        const href = frame.contentWindow?.location?.href;
+                        if (href && !/^about:/i.test(href) && href !== location.href) {
+                            history.replaceState(null, '', href);
+                        }
+                    } catch { /* cross-origin */ }
+                };
+                frame.addEventListener('load', syncUrl);
+                syncUrl();
+            });
             return;
         }
 
@@ -3284,6 +3335,14 @@
         function initTopaze($, $$) {
             const main = $('#main') || $('main, [role="main"]');
         if (!main) { removeClass('scn-loading'); return; }
+
+        try {
+            if (window.top !== window && window.top.location.origin === location.origin) {
+                if (window.top.location.href !== location.href) {
+                    window.top.history.replaceState(null, '', location.href);
+                }
+            }
+        } catch { /* cross-origin */ }
 
         const courseTitle = clean($('#title h1, h1.case_ti')?.textContent) || clean(document.title);
         const courseSub = clean($('#title h2, .subTitle')?.textContent);
