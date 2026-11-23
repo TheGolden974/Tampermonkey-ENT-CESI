@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      26.1
+// @version      26.2
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -2392,7 +2392,15 @@
                 padding: 12px 16px !important; margin-bottom: 8px !important; transition: background .15s !important;
             }
             .activity-item:hover { background: var(--m-soft) !important; }
-            .activityname a { color: var(--m-ink) !important; font-weight: 600 !important; }
+            .activity-item .activity-grid,
+            .activity-item .activity-name-area,
+            .activity-item .activitytitle,
+            .activity-item .activityname {
+                background: transparent !important; box-shadow: none !important;
+            }
+            .activity-item .activity-grid { align-items: center !important; }
+            .activityname a, .activityname a .instancename { color: var(--m-ink) !important; font-weight: 600 !important; }
+            .activityname a:hover, .activityname a:hover .instancename { color: var(--m-primary) !important; }
 
             /* Boutons Moodle */
             .btn-primary {
@@ -2862,18 +2870,20 @@
         .scn-card-body p { margin: 4px 0 !important; }
 
         /* Grille des objectifs (Scenari learnOut) */
-        .scn-obj-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 14px 0 20px; }
-        .scn-obj-grid > article.learnOut { margin: 0 !important; height: 100%; display: flex; flex-direction: column; }
+        .scn-obj-grid { display: flex !important; flex-direction: column !important; gap: 10px !important; margin: 12px 0 18px !important; }
+        .scn-obj-grid > article.learnOut { margin: 0 !important; height: auto !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; }
         html.scn article.learnOut {
-            background: var(--soft) !important; border: 1px solid var(--line) !important; border-radius: 12px !important;
-            padding: 16px 18px !important; box-shadow: none !important; position: relative !important;
+            background: var(--soft) !important; border: 1px solid var(--line) !important; border-radius: 10px !important;
+            padding: 9px 14px !important; margin: 0 0 10px !important; min-height: 0 !important; height: auto !important;
+            box-shadow: none !important; position: relative !important;
         }
-        html.scn article.learnOut .learnOut_ti { font-size: .95rem !important; font-weight: 700 !important; color: var(--ink) !important; margin: 0 0 6px !important; }
+        html.scn article.learnOut:last-child { margin-bottom: 0 !important; }
+        html.scn article.learnOut .learnOut_ti { font-size: .9rem !important; font-weight: 600 !important; line-height: 1.4 !important; color: var(--ink) !important; margin: 0 !important; }
         .scn-lvl {
             display: inline-block; font-size: .68rem; font-weight: 800; letter-spacing: .5px;
             text-transform: uppercase; padding: 2px 8px; border-radius: 6px;
             background: var(--acc-soft); color: var(--acc-ink); border: 1px solid var(--acc-line);
-            margin: 0 6px 4px 0; vertical-align: middle;
+            margin: 0 8px 0 0; vertical-align: middle;
         }
 
         /* Sous-pages Opale (subPageSelector) en cartes modernes cliquables */
