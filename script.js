@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CESI Suite - ENT, Moodle & Scenari
 // @namespace    http://tampermonkey.net/
-// @version      26.2
+// @version      26.3
 // @description  Suite complète pour CESI : ENT modernisé, Moodle unifié, SSO fluide (WAYF, STS), et lecteur de cours modernisé (Moodle Opale & Scenari Topaze).
 // @author       Maxence
 // @match        https://ent.cesi.fr/*
@@ -107,35 +107,35 @@
         moon: 'M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z',
         sun: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0z',
         rocket: 'M12 2.5c3.5 2.4 5 6.3 5 10.2l2.3 2.3c.3.3.4.7.2 1.1l-1.5 3.1c-.2.5-.8.7-1.3.4l-2.6-1.4H9.9l-2.6 1.4c-.5.3-1.1.1-1.3-.4L4.5 16.1c-.2-.4-.1-.8.2-1.1L7 12.7c0-3.9 1.5-7.8 5-10.2zm0 5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z',
-        target: 'M12 2a10 10 0 1 0 10 10h-2a8 8 0 1 1-8-8V2zm0 4a6 6 0 1 0 6 6h-2a4 4 0 1 1-4-4V6zm0 4a2 2 0 1 0 2 2h-2v-2z'
+        flag: 'M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z',
+        globe: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'
     };
     const svg = (name, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true"><path d="${ICONS[name] || ICONS.link}"/></svg>`;
     const getCourseKind = (title) => {
         const t = String(title || '');
         if (/prosit\s*aller/i.test(t)) return { id: 'aller', label: 'Prosit Aller', icon: 'rocket' };
-        if (/prosit\s*retour/i.test(t)) return { id: 'retour', label: 'Prosit Retour', icon: 'target' };
-        if (/travau?x?\s*personnels?\s*encadr[eé]s?|\btpe\b/i.test(t)) return { id: 'tpe', label: 'TPE', icon: 'school' };
-        if (/travail\s*(?:de|en)\s*groupe|\btdg\b/i.test(t)) return { id: 'groupe', label: 'Groupe', icon: 'group' };
+        if (/prosit\s*retour/i.test(t)) return { id: 'retour', label: 'Prosit Retour', icon: 'flag' };
+        if (/travau?x?\s*personnels?\s*encadr[eé]s?|\btpe\b/i.test(t)) return { id: 'tpe', label: 'Travaux Personnels Encadrés', icon: 'school' };
+        if (/travail\s*(?:de|en)\s*groupe|\btdg\b/i.test(t)) return { id: 'groupe', label: 'Travail de groupe', icon: 'group' };
+        if (/\b(?:anglais|english)\b/i.test(t)) return { id: 'anglais', label: 'Anglais', icon: 'globe' };
         return null;
     };
     const courseKindBadge = (kind) => kind
-        ? `<span class="course-kind-badge kind-${kind.id}" title="${esc(kind.label)}">${svg(kind.icon)}<span>${esc(kind.label)}</span></span>`
+        ? `<span class="course-kind-badge kind-${kind.id}" title="${esc(kind.label)}" aria-label="${esc(kind.label)}">${svg(kind.icon)}</span>`
         : '';
     const COURSE_KIND_CSS = `
         .course-kind-badge {
-            display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
-            padding: 3px 8px; border-radius: 999px; font-size: .68rem; font-weight: 800;
-            letter-spacing: .2px; line-height: 1.1; white-space: nowrap;
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+            width: 30px; height: 30px; border-radius: 9px;
+            background: var(--c-accent-soft); color: var(--c-accent-ink) !important;
+            border: 1px solid rgba(251,226,22,.45);
         }
-        .course-kind-badge svg { width: 12px; height: 12px; fill: currentColor; flex-shrink: 0; }
-        .course-kind-badge.kind-aller  { background: #dbeafe; color: #1d4ed8 !important; }
-        .course-kind-badge.kind-tpe    { background: #fef3c7; color: #b45309 !important; }
-        .course-kind-badge.kind-groupe { background: #f3e8ff; color: #7e22ce !important; }
-        .course-kind-badge.kind-retour { background: #dcfce7; color: #15803d !important; }
-        html.dark .course-kind-badge.kind-aller  { background: rgba(59,130,246,.2); color: #93c5fd !important; }
-        html.dark .course-kind-badge.kind-tpe    { background: rgba(245,158,11,.2); color: #fcd34d !important; }
-        html.dark .course-kind-badge.kind-groupe { background: rgba(168,85,247,.2); color: #d8b4fe !important; }
-        html.dark .course-kind-badge.kind-retour { background: rgba(34,197,94,.2); color: #86efac !important; }
+        .course-kind-badge svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+        html.dark .course-kind-badge {
+            background: rgba(251,226,22,.14); color: #FBE216 !important;
+            border-color: rgba(251,226,22,.35);
+        }
+        .edt-course-item .course-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     `;
     const CESI_LOGO_URL = 'https://www.anrt.asso.fr/sites/default/files/styles/large/public/2024-03/CESI.png?itok=GJ29qFB-';
     const cesiBrand = () => `<span class="cesi-brand-wrap"><img class="cesi-brand-svg cesi-brand-img" src="${CESI_LOGO_URL}" alt="CESI École d'ingénieurs" /><img class="cesi-brand-svg cesi-brand-img cesi-brand-yellow" src="${CESI_LOGO_URL}" alt="" aria-hidden="true" /></span>`;
@@ -147,7 +147,8 @@
         .cesi-brand-yellow { display: none !important; position: absolute; inset: 0; pointer-events: none; clip-path: inset(40% 0 38% 73%); }
         html.dark .cesi-brand-img:not(.cesi-brand-yellow), html.cesi-dark .cesi-brand-img:not(.cesi-brand-yellow), html.scn-dark .cesi-brand-img:not(.cesi-brand-yellow) { filter: brightness(0) invert(1); }
         html.dark .cesi-brand-yellow, html.cesi-dark .cesi-brand-yellow, html.scn-dark .cesi-brand-yellow { display: block !important; }
-        html.cesi-theme-switching *, html.cesi-theme-switching *::before, html.cesi-theme-switching *::after { transition: none !important; }
+        html.cesi-theme-switching *, html.cesi-theme-switching *::before, html.cesi-theme-switching *::after,
+        html.cesi-theme-switching #page-wrapper *, html.cesi-theme-switching #cesi-app *, html.cesi-theme-switching #scn-shell * { transition: none !important; }
     `;
     const CAMPUS_3D_CSS = `
         .cesi-map-section { margin-top: 32px; }
@@ -490,7 +491,7 @@
         els.forEach((el) => el.classList.add('cesi-theme-switching'));
         fn();
         els.forEach((el) => void el.offsetHeight);
-        requestAnimationFrame(() => els.forEach((el) => el.classList.remove('cesi-theme-switching')));
+        requestAnimationFrame(() => requestAnimationFrame(() => els.forEach((el) => el.classList.remove('cesi-theme-switching'))));
     };
     const getSystemDark = () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
     const getSavedTheme = () => {
@@ -1290,12 +1291,11 @@
                         <div class="edt-course-item${cls}" style="cursor:pointer" data-room="${esc(c.place)}" data-title="${esc(c.title)}" data-time="${esc(c.allDay ? 'Journée' : `${c.start} - ${c.end}`)}" data-teacher="${esc(c.teacher)}" data-live="${live ? '1' : '0'}">
                             <span class="course-time">${c.allDay ? 'Journée' : `${esc(c.start)} - ${esc(c.end)}`}</span>
                             <div class="course-info">
-                                <h5 class="course-title">${esc(c.title)}</h5>
+                                <h5 class="course-title"><span>${esc(c.title)}</span>${live ? '<span class="live-pill">EN COURS</span>' : ''}</h5>
                                 <p class="course-sub">${svg('pin')}${esc(c.place)}</p>
                                 ${c.teacher ? `<p class="course-sub">${svg('user')}${esc(c.teacher)}</p>` : ''}
                             </div>
                             ${courseKindBadge(kind)}
-                            ${live ? '<span class="live-pill">EN COURS</span>' : ''}
                         </div>`;
                 }).join('');
                 return `
@@ -2308,9 +2308,53 @@
             .nav-link:hover, .navbar .nav > li > a:hover {
                 color: var(--m-ink) !important; background: var(--m-soft) !important;
             }
+            .navbar .primary-navigation,
+            .navbar .primary-navigation .moremenu,
+            .navbar .primary-navigation .more-nav {
+                display: flex !important; align-items: center !important; visibility: visible !important; opacity: 1 !important; overflow: visible !important;
+            }
+            .navbar .primary-navigation .nav-item {
+                display: inline-flex !important; align-items: center !important; visibility: visible !important; opacity: 1 !important;
+            }
+            .navbar .primary-navigation .nav-link,
+            .navbar .primary-navigation .nav-link * {
+                color: var(--m-ink) !important; visibility: visible !important; opacity: 1 !important;
+                text-transform: none !important;
+            }
+            .navbar .primary-navigation .nav-link {
+                display: inline-flex !important; align-items: center !important; height: 32px !important;
+                padding: 0 10px !important; font-size: .8rem !important; line-height: 1 !important;
+                white-space: nowrap !important; border-radius: 8px !important;
+            }
+            .navbar .primary-navigation .nav-link.active,
+            .navbar .primary-navigation .nav-link.active * {
+                background: var(--m-primary) !important; color: #000 !important; font-weight: 700 !important;
+            }
 
             /* Cartes, conteneurs et listes Moodle */
-            #page, #page-content, #region-main, .card, .block, .dashboard-card,
+            #page, #page-content, #region-main-box, #region-main, #region-main > div[role="main"],
+            #page .main-inner, #block-region-content,
+            #region-main > .card:has(.block), #region-main .card:has(#block-region-content),
+            #page-my-index #page-header, #page-my-index #page-header .card {
+                background: transparent !important; border: 0 !important; border-radius: 0 !important;
+                box-shadow: none !important; color: var(--m-text) !important;
+            }
+            html.cesi-dark #page-header .page-header-headings,
+            html.cesi-dark .page-context-header .page-header-headings {
+                background: transparent !important; border: 0 !important;
+            }
+            html.cesi-dark #page-header:has(img, [style*="background-image"]) .page-header-headings {
+                background: rgba(13, 17, 23, .82) !important; color: #f0f6fc !important;
+                border: 1px solid var(--m-border) !important; border-radius: 10px !important;
+            }
+            html.cesi-dark #page-header .page-header-headings h1 {
+                background: transparent !important; border: 0 !important; color: #f0f6fc !important;
+            }
+            #region-main > .card:has(.block) > .card-body,
+            #region-main .card:has(#block-region-content) > .card-body {
+                padding: 0 !important;
+            }
+            .card, .block, .dashboard-card,
             .course-info-container, .activity-item, .list-group-item, .course-listitem,
             [data-region="course-content"], .courses-view-course-item, .section.course-section,
             .maincalendar .calendartable td, .maincalendar .calendartable th {
@@ -2389,7 +2433,13 @@
                 color: var(--m-ink) !important; font-weight: 700 !important; font-size: .95rem !important;
             }
             .activity-item {
-                padding: 12px 16px !important; margin-bottom: 8px !important; transition: background .15s !important;
+                padding: 8px 12px !important; margin-bottom: 6px !important; transition: background .15s !important;
+            }
+            .section.course-section {
+                padding: 12px 16px !important; margin-bottom: 12px !important;
+            }
+            .section.course-section .course-section-header {
+                margin-bottom: 6px !important; padding: 2px 0 !important;
             }
             .activity-item:hover { background: var(--m-soft) !important; }
             .activity-item .activity-grid,
@@ -2421,6 +2471,246 @@
                 background: var(--m-primary) !important; color: #000 !important; border-color: var(--m-primary) !important;
             }
             h2.sectionname { border-left: 4px solid var(--m-primary) !important; padding-left: 10px !important; }
+            /* Cartes visuelles Moodle (.item.col et .card.card-bg-light) */
+            .item > div:has(.icon-holder):has(.item-content),
+            .card.card-bg-light,
+            .col > .card:has(> img):has(.card-footer) {
+                background: var(--m-card) !important; border: 1px solid var(--m-border) !important;
+                border-radius: 16px !important; padding: 12px !important; overflow: hidden !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,.06) !important; transform: none !important;
+                display: flex !important; flex-direction: column !important; justify-content: space-between !important; height: 100% !important;
+                transition: border-color .12s ease, box-shadow .12s ease !important;
+            }
+            .item > div:has(.icon-holder):has(.item-content):hover,
+            .card.card-bg-light:hover,
+            .col > .card:has(> img):has(.card-footer):hover {
+                transform: none !important; border-color: var(--m-primary) !important;
+                box-shadow: 0 8px 20px rgba(0,0,0,.12) !important;
+            }
+            .item .icon-holder {
+                width: 100% !important; padding: 0 !important; margin: 0 !important;
+                background: transparent !important; overflow: hidden !important; border-radius: 10px !important;
+                display: flex !important; align-items: center !important; justify-content: center !important;
+            }
+            .item .icon-holder:has(i, svg):not(:has(img)) {
+                padding: 10px 0 4px !important;
+            }
+            .item .icon-holder i,
+            .item .icon-holder svg {
+                width: 56px !important; height: 56px !important; border-radius: 14px !important;
+                display: inline-flex !important; align-items: center !important; justify-content: center !important;
+                font-size: 26px !important; background: #fffbeb !important; color: #7a6600 !important;
+                border: 1px solid #fde68a !important; fill: currentColor !important;
+            }
+            html.cesi-dark .item .icon-holder i,
+            html.cesi-dark .item .icon-holder svg {
+                background: rgba(251,226,22,.1) !important; color: var(--m-primary) !important;
+                border-color: rgba(251,226,22,.32) !important;
+            }
+            .item .icon-holder img,
+            .card.card-bg-light > img,
+            .col > .card:has(> img):has(.card-footer) > img {
+                width: 100% !important; min-width: 100% !important; max-width: none !important;
+                height: 195px !important; object-fit: cover !important; object-position: center !important;
+                display: block !important; border-radius: 10px !important; margin: 0 !important;
+            }
+            .card.card-bg-light .card-body,
+            .col > .card:has(> img):has(.card-footer) .card-body {
+                padding: 12px 4px 8px !important; background: transparent !important;
+            }
+            .card.card-bg-light .card-title,
+            .col > .card:has(> img):has(.card-footer) .card-title {
+                color: var(--m-ink) !important; font-weight: 700 !important; margin: 0 0 4px !important;
+            }
+            .card.card-bg-light .card-text,
+            .col > .card:has(> img):has(.card-footer) .card-text {
+                color: var(--m-muted) !important; margin: 0 !important; font-size: .88rem !important;
+            }
+            .item .item-content,
+            .card.card-bg-light .card-footer,
+            .col > .card:has(> img):has(.card-footer) .card-footer {
+                padding: 10px 0 0 !important; margin: 0 !important; border-top: 0 !important; background: transparent !important;
+            }
+            .item .item-content a.btn,
+            .card.card-bg-light .card-footer a.btn,
+            .col > .card:has(> img):has(.card-footer) .card-footer a.btn,
+            .section .no-overflow a.btn.btn-dark {
+                background: var(--m-soft) !important; color: var(--m-ink) !important;
+                border: 1px solid var(--m-border) !important; border-radius: 10px !important;
+                font-size: .88rem !important; font-weight: 700 !important; padding: 8px 14px !important;
+                text-transform: none !important;
+                transition: background .12s ease, color .12s ease, border-color .12s ease !important;
+            }
+            .item .item-content a.btn,
+            .card.card-bg-light .card-footer a.btn,
+            .col > .card:has(> img):has(.card-footer) .card-footer a.btn {
+                width: 100% !important; display: block !important;
+            }
+            .item .item-content a.btn:hover,
+            .card.card-bg-light .card-footer a.btn:hover,
+            .col > .card:has(> img):has(.card-footer) .card-footer a.btn:hover,
+            .section .no-overflow a.btn.btn-dark:hover {
+                background: var(--m-primary) !important; color: #000 !important; border-color: var(--m-primary) !important;
+            }
+            .section .no-overflow a.btn.btn-primary {
+                border-radius: 10px !important; font-size: .88rem !important; padding: 9px 16px !important;
+                margin: 4px !important; text-transform: none !important;
+            }
+            .activity-item:has(.no-overflow a.btn) .activity-grid,
+            .activity-item:has(.no-overflow a.btn) .activity-altcontent {
+                display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important;
+            }
+            .section .no-overflow:has(> p > a.btn, > a.btn),
+            .section .no-overflow > div:has(> p > a.btn, > a.btn) {
+                display: flex !important; flex-wrap: wrap !important; align-items: stretch !important;
+                justify-content: center !important; gap: 10px !important; width: 100% !important;
+            }
+            .section .no-overflow:has(> p > a.btn, > a.btn) br { display: none !important; }
+            .section .no-overflow > div:has(> p > a.btn) > p:has(> a.btn),
+            .section .no-overflow:has(> p > a.btn) > p:has(> a.btn) {
+                display: contents !important; margin: 0 !important;
+            }
+            .section .no-overflow:has(> p > a.btn, > a.btn) a.btn {
+                flex: 1 1 200px !important; max-width: 320px !important; margin: 0 !important;
+                display: inline-flex !important; align-items: center !important; justify-content: center !important;
+                text-align: center !important; padding: 10px 16px !important; border-radius: 10px !important;
+                font-size: .86rem !important; font-weight: 700 !important; text-transform: none !important;
+            }
+            .section .no-overflow a.btn.btn-info {
+                background: var(--m-soft) !important; color: var(--m-ink) !important;
+                border: 1px solid var(--m-border) !important; box-shadow: none !important;
+            }
+            .section .no-overflow a.btn.btn-info[href]:hover {
+                background: var(--m-primary) !important; color: #000 !important; border-color: var(--m-primary) !important;
+            }
+            .section .no-overflow a.btn.btn-info:not([href]) {
+                cursor: default !important; opacity: .78 !important;
+            }
+            /* Bouton isolé type "SESSION LOCALE" (activityinline + pattern-holder) */
+            .activity-item:has(.pattern-holder):has(a.btn),
+            .activity-item.activityinline:has(.no-overflow a.btn) {
+                background: transparent !important; border: 0 !important; box-shadow: none !important;
+                padding: 4px 0 0 !important; margin: 0 !important;
+            }
+            .activity-item:has(.pattern-holder) .pattern-holder { display: none !important; }
+            .activity-item:has(.pattern-holder) .activity-grid,
+            .activity-item:has(.pattern-holder) .activity-altcontent,
+            .activity-item:has(.pattern-holder) .item.col {
+                display: block !important; margin: 0 !important; padding: 0 !important;
+            }
+            .activity-item:has(.pattern-holder) .item.col {
+                display: flex !important; justify-content: center !important;
+            }
+            .activity-item:has(.pattern-holder) a.btn {
+                background: var(--m-primary) !important; color: #000 !important; border: 0 !important;
+                border-radius: 10px !important; font-size: .88rem !important; font-weight: 800 !important;
+                padding: 8px 22px !important; width: auto !important; min-width: 180px !important;
+                display: inline-flex !important; align-items: center !important; justify-content: center !important;
+                text-transform: none !important; box-shadow: 0 2px 10px rgba(251,226,22,.25) !important;
+            }
+            .activity-item:has(.pattern-holder) a.btn:hover {
+                filter: brightness(0.95) !important; color: #000 !important;
+            }
+            #cesi-moodle-more { position: relative !important; }
+            #cesi-moodle-more .dropdown-menu { min-width: 220px; border-radius: 12px !important; padding: 6px !important; box-shadow: 0 10px 28px rgba(0,0,0,.18) !important; }
+            #cesi-moodle-more .dropdown-item { border-radius: 8px !important; padding: 7px 12px !important; font-size: .86rem !important; font-weight: 500 !important; }
+            #cesi-moodle-more .dropdown-menu.show { display: block !important; }
+
+            /* Page "Mes cours" (/my/courses.php — block_myoverview) */
+            .block_myoverview { border-radius: 16px !important; box-shadow: 0 2px 10px rgba(0,0,0,.04) !important; }
+            .block_myoverview .card-title {
+                font-size: 1.05rem !important; font-weight: 800 !important; color: var(--m-ink) !important;
+                border-left: 4px solid var(--m-primary) !important; padding-left: 10px !important; margin: 0 !important;
+            }
+            [data-region="myoverview"] [data-region="filter"] { margin: 4px 0 16px !important; }
+            [data-region="myoverview"] [data-region="filter"] > .row {
+                display: flex !important; flex-wrap: wrap !important; align-items: center !important;
+                gap: 10px !important; width: 100% !important; margin: 0 !important;
+            }
+            [data-region="myoverview"] [data-region="filter"] > .row > div {
+                margin: 0 !important; padding: 0 !important;
+            }
+            [data-region="myoverview"] .dropdown-toggle {
+                height: 38px !important; border-radius: 10px !important; padding: 0 14px !important;
+                border: 1px solid var(--m-border) !important; background: var(--m-soft) !important;
+                color: var(--m-ink) !important; font-size: .84rem !important; font-weight: 600 !important;
+                display: inline-flex !important; align-items: center !important; gap: 6px !important;
+                box-shadow: none !important;
+            }
+            [data-region="myoverview"] .dropdown-toggle:hover {
+                border-color: var(--m-primary) !important; background: var(--m-card) !important;
+            }
+            [data-region="myoverview"] [data-region="filter"] input[data-region="input"] {
+                height: 38px !important; border-radius: 10px !important; padding: 0 36px 0 14px !important;
+                border: 1px solid var(--m-border) !important; background: var(--m-soft) !important;
+                color: var(--m-ink) !important; font-size: .86rem !important; box-shadow: none !important;
+            }
+            [data-region="myoverview"] [data-region="filter"] input[data-region="input"]:focus {
+                border-color: var(--m-primary) !important; box-shadow: 0 0 0 3px rgba(251,226,22,.18) !important;
+                background: var(--m-card) !important;
+            }
+            [data-region="myoverview"] ul.list-group {
+                display: flex !important; flex-direction: column !important; gap: 10px !important;
+                background: transparent !important; border: 0 !important;
+            }
+            [data-region="myoverview"] li.list-group-item.course-listitem {
+                padding: 12px 16px !important; margin: 0 !important;
+                border: 1px solid var(--m-border) !important; border-radius: 14px !important;
+                background: var(--m-card) !important;
+            }
+            [data-region="myoverview"] li.list-group-item.course-listitem:hover {
+                border-color: var(--m-primary) !important; background: var(--m-soft) !important;
+                box-shadow: 0 4px 14px rgba(0,0,0,.06) !important;
+            }
+            [data-region="myoverview"] .course-listitem .row { align-items: center !important; }
+            [data-region="myoverview"] .course-listitem .list-image {
+                height: 68px !important; border-radius: 10px !important;
+                background-size: cover !important; background-position: center !important;
+                border: 1px solid var(--m-border) !important;
+            }
+            html.cesi-dark [data-region="myoverview"] .course-listitem .list-image[style*="noimg"],
+            html.cesi-dark .dashboard-card .card-img-top[style*="noimg"] {
+                filter: invert(0.88) hue-rotate(180deg);
+            }
+            [data-region="myoverview"] .course-listitem a.coursename {
+                font-size: .94rem !important; font-weight: 700 !important; color: var(--m-ink) !important;
+                text-decoration: none !important; line-height: 1.35 !important;
+            }
+            [data-region="myoverview"] .course-listitem a.coursename:hover { text-decoration: underline !important; }
+            [data-region="myoverview"] .course-listitem .categoryname {
+                display: inline-block !important; margin-top: 4px !important; padding: 2px 9px !important;
+                border-radius: 999px !important; font-size: .74rem !important; font-weight: 600 !important;
+                background: var(--m-soft) !important; border: 1px solid var(--m-border) !important;
+                color: var(--m-muted) !important;
+            }
+            [data-region="myoverview"] .course-listitem .progress-text {
+                font-size: .76rem !important; font-weight: 600 !important; color: var(--m-muted) !important; margin-top: 4px !important;
+            }
+            [data-region="myoverview"] .course-listitem .coursemenubtn {
+                width: 34px !important; height: 34px !important; border-radius: 9px !important;
+                display: inline-flex !important; align-items: center !important; justify-content: center !important;
+                color: var(--m-muted) !important; border: 1px solid transparent !important;
+            }
+            [data-region="myoverview"] .course-listitem .coursemenubtn:hover {
+                background: var(--m-card) !important; border-color: var(--m-border) !important; color: var(--m-ink) !important;
+            }
+            [data-region="myoverview"] .menu:has(.cesi-course-actions) > .dropdown { display: none !important; }
+            .cesi-course-actions {
+                display: inline-flex; align-items: center; gap: 6px; margin-left: auto;
+            }
+            .cesi-course-act-btn {
+                width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--m-border);
+                background: var(--m-soft); color: var(--m-muted); padding: 0;
+                display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+                transition: background .12s ease, color .12s ease, border-color .12s ease;
+            }
+            .cesi-course-act-btn:hover { background: var(--m-card); color: var(--m-ink); border-color: var(--m-muted); }
+            .cesi-course-act-btn.is-fav {
+                background: rgba(251,226,22,.16); color: #eab308; border-color: rgba(251,226,22,.45);
+            }
+            .cesi-course-act-btn.is-fav:hover { background: rgba(251,226,22,.26); color: #ca8a04; }
+            .cesi-course-act-btn.is-hide:hover { color: #ef4444; border-color: rgba(239,68,68,.45); }
+            .cesi-course-act-btn svg { width: 16px; height: 16px; display: block; }
 
             /* Bouton de thème dans la barre Moodle */
             .cesi-moodle-theme-btn {
@@ -2472,12 +2762,206 @@
                 return;
             }
 
+            // Nettoyer les séparateurs "-" isolés entre boutons dans les labels Moodle
+            document.querySelectorAll('.section .no-overflow p, .section .no-overflow div').forEach((el) => {
+                if (!el.querySelector('a.btn')) return;
+                Array.from(el.childNodes).forEach((n) => {
+                    if (n.nodeType === Node.TEXT_NODE && /^\s*[-–|•]\s*$/.test(n.nodeValue)) n.remove();
+                });
+            });
+
+            // Remplacer le menu ⋮ de "Mes cours" par des boutons directs Étoile (favori) et Œil barré (cacher)
+            const myOverview = document.querySelector('[data-region="myoverview"]');
+            if (myOverview) {
+                const STAR_OUTLINE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+                const STAR_FILLED = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+                const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>';
+                const EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+
+                let syncingActions = false;
+                let actionObs = null;
+                const syncCourseActions = () => {
+                    if (syncingActions) return;
+                    syncingActions = true;
+                    try {
+                        myOverview.querySelectorAll('[data-region="course-content"] .menu').forEach((menuEl) => {
+                            const addFav = menuEl.querySelector('a[data-action="add-favourite"]');
+                            const remFav = menuEl.querySelector('a[data-action="remove-favourite"]');
+                            const hideBtn = menuEl.querySelector('a[data-action="hide-course"]');
+                            const showBtn = menuEl.querySelector('a[data-action="show-course"]');
+                            if (!addFav && !hideBtn) return;
+
+                            let box = menuEl.querySelector('.cesi-course-actions');
+                            if (!box) {
+                                box = document.createElement('div');
+                                box.className = 'cesi-course-actions';
+                                box.innerHTML = `
+                                    <button type="button" class="cesi-course-act-btn" data-cesi-act="fav"></button>
+                                    <button type="button" class="cesi-course-act-btn is-hide" data-cesi-act="vis"></button>
+                                `;
+                                menuEl.appendChild(box);
+
+                                box.querySelector('[data-cesi-act="fav"]').addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const isFav = remFav && !remFav.classList.contains('hidden');
+                                    (isFav ? remFav : addFav)?.click();
+                                    setTimeout(syncCourseActions, 50);
+                                });
+                                box.querySelector('[data-cesi-act="vis"]').addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const isHidden = showBtn && !showBtn.classList.contains('hidden');
+                                    (isHidden ? showBtn : hideBtn)?.click();
+                                    setTimeout(syncCourseActions, 50);
+                                });
+                            }
+
+                            const favEl = box.querySelector('[data-cesi-act="fav"]');
+                            const visEl = box.querySelector('[data-cesi-act="vis"]');
+                            const favState = remFav && !remFav.classList.contains('hidden') ? '1' : '0';
+                            const visState = showBtn && !showBtn.classList.contains('hidden') ? '1' : '0';
+
+                            if (favEl.dataset.state !== favState) {
+                                favEl.dataset.state = favState;
+                                const isFav = favState === '1';
+                                favEl.classList.toggle('is-fav', isFav);
+                                favEl.innerHTML = isFav ? STAR_FILLED : STAR_OUTLINE;
+                                favEl.title = isFav ? 'Retirer des favoris' : 'Marquer comme favori';
+                                favEl.setAttribute('aria-label', favEl.title);
+                            }
+
+                            if (visEl.dataset.state !== visState) {
+                                visEl.dataset.state = visState;
+                                const isHidden = visState === '1';
+                                visEl.innerHTML = isHidden ? EYE_ON : EYE_OFF;
+                                visEl.title = isHidden ? 'Ré-afficher' : 'Retirer de l’affichage';
+                                visEl.setAttribute('aria-label', visEl.title);
+                            }
+                        });
+                    } finally {
+                        actionObs?.takeRecords();
+                        syncingActions = false;
+                    }
+                };
+
+                syncCourseActions();
+                actionObs = new MutationObserver(syncCourseActions);
+                actionObs.observe(myOverview, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            }
+
+            // Cacher les sections/catégories Moodle vides
+            document.querySelectorAll('li.section.course-section, .section.course-section').forEach((sec) => {
+                const hasActivity = sec.querySelector('li.activity, .activity-item, .item');
+                const summary = sec.querySelector('.summarytext, .section-summary-activities, .description');
+                const hasSummaryContent = summary && (clean(summary.textContent).length > 0 || summary.querySelector('img, video, iframe, a'));
+                if (!hasActivity && !hasSummaryContent) {
+                    sec.style.display = 'none';
+                }
+            });
+
             // Unifier le logo CESI en haut à gauche de la barre Moodle
             const moodleBrand = document.querySelector('.navbar .navbar-brand');
             if (moodleBrand && !moodleBrand.dataset.cesiBranded) {
                 moodleBrand.dataset.cesiBranded = '1';
                 moodleBrand.classList.add('cesi-brand-link');
                 moodleBrand.innerHTML = cesiBrand();
+            }
+
+            // Filtrer la barre de titre Moodle : garder A3 FISA, Mes cours, Cycles Ingénieurs et cacher le reste dans "Plus ▾"
+            const primaryNavList = document.querySelector('.navbar .primary-navigation ul.more-nav, .navbar .primary-navigation ul.navbar-nav, #mainnavigation ul.navbar-nav');
+            if (primaryNavList && !primaryNavList.dataset.cesiFiltered) {
+                primaryNavList.dataset.cesiFiltered = '1';
+
+                const makeNavItem = (label, href, isActive = false) => {
+                    const li = document.createElement('li');
+                    li.className = 'nav-item';
+                    li.innerHTML = `<a class="nav-link${isActive ? ' active' : ''}" href="${esc(href)}">${esc(label)}</a>`;
+                    return li;
+                };
+
+                // Chercher "Cycles Ingénieurs" (ou "PGE") et "Mes cours" dans les éléments existants
+                const allAnchors = Array.from(primaryNavList.querySelectorAll('a[href]'));
+                const cyclesAnchor = allAnchors.find((a) => /cycles?\s*ing[ée]nieurs?/i.test(clean(a.textContent)) && a.getAttribute('href') !== '#');
+                const pgeLi = Array.from(primaryNavList.children).find((li) => /\bpge\b/i.test(clean(li.textContent)));
+                const mesCoursAnchor = allAnchors.find((a) => /\/my\/courses\.php/i.test(a.getAttribute('href') || '') || /^mes cours$/i.test(clean(a.textContent)));
+
+                // Collecter tout le reste (y compris les items de dropdownmoremenu) pour le menu déroulant "Plus"
+                const hiddenLinks = [];
+                const seenHrefs = new Set([
+                    'https://moodle.cesi.fr/course/view.php?id=6183',
+                    'https://moodle.cesi.fr/my/courses.php'
+                ]);
+                if (cyclesAnchor?.href) seenHrefs.add(cyclesAnchor.href);
+
+                Array.from(primaryNavList.children).forEach((li) => {
+                    if (li === pgeLi && !cyclesAnchor) return;
+                    const links = Array.from(li.querySelectorAll('a[href]')).filter((a) => {
+                        const h = a.getAttribute('href') || '';
+                        const txt = clean(a.textContent);
+                        return h && h !== '#' && txt && !seenHrefs.has(a.href) && !/cycles?\s*ing[ée]nieurs?/i.test(txt);
+                    });
+                    links.forEach((a) => {
+                        seenHrefs.add(a.href);
+                        hiddenLinks.push({ label: clean(a.textContent), href: a.href });
+                    });
+                });
+
+                primaryNavList.innerHTML = '';
+                primaryNavList.appendChild(makeNavItem(
+                    'A3 FISA Informatique 2026 - 2027',
+                    'https://moodle.cesi.fr/course/view.php?id=6183',
+                    location.href.includes('id=6183')
+                ));
+                primaryNavList.appendChild(makeNavItem(
+                    'Mes cours',
+                    mesCoursAnchor?.href || 'https://moodle.cesi.fr/my/courses.php',
+                    location.pathname.includes('/my/courses.php')
+                ));
+
+                if (cyclesAnchor) {
+                    primaryNavList.appendChild(makeNavItem(
+                        'Cycles Ingénieurs',
+                        cyclesAnchor.href,
+                        location.href === cyclesAnchor.href
+                    ));
+                } else if (pgeLi) {
+                    const pgeToggle = pgeLi.querySelector('a.nav-link, button');
+                    if (pgeToggle) pgeToggle.textContent = 'Cycles Ingénieurs';
+                    primaryNavList.appendChild(pgeLi);
+                }
+
+                if (hiddenLinks.length) {
+                    const moreLi = document.createElement('li');
+                    moreLi.id = 'cesi-moodle-more';
+                    moreLi.className = 'nav-item dropdown';
+                    moreLi.innerHTML = `
+                        <a href="#" class="nav-link dropdown-toggle" role="button" aria-expanded="false">Plus</a>
+                        <div class="dropdown-menu">
+                            ${hiddenLinks.map((l) => `<a class="dropdown-item" href="${esc(l.href)}">${esc(l.label)}</a>`).join('')}
+                        </div>
+                    `;
+                    const toggle = moreLi.querySelector('.dropdown-toggle');
+                    const menu = moreLi.querySelector('.dropdown-menu');
+                    toggle.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const open = menu.classList.toggle('show');
+                        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    });
+                    document.addEventListener('click', (e) => {
+                        if (!moreLi.contains(e.target)) {
+                            menu.classList.remove('show');
+                            toggle.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    primaryNavList.appendChild(moreLi);
+                }
             }
 
             // Intégrer proprement les accès rapides et le bouton de thème dans la barre Moodle
@@ -2488,7 +2972,6 @@
                 wrap.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; margin-right: 12px;';
                 wrap.innerHTML = `
                     <a href="https://ent.cesi.fr/accueil-apprenant" class="btn btn-sm" style="background: var(--m-primary) !important; color: #000 !important; font-weight: 800; font-size: .78rem; padding: 4px 10px; border-radius: 8px; text-decoration: none;">ENT CESI</a>
-                    <a href="https://moodle.cesi.fr/my/courses.php" class="nav-link d-none d-lg-inline-block" style="font-weight: 600; font-size: .84rem;">Mes cours</a>
                     <button type="button" class="cesi-moodle-theme-btn" id="cesi-moodle-theme-btn" title="Basculer clair/sombre" aria-label="Thème">
                         ${svg('moon', 'moon')}${svg('sun', 'sun')}
                     </button>
@@ -2853,6 +3336,16 @@
         html.scn h3, html.scn .section_ti, html.scn .style-22 {
             font-size: 1.15rem !important; font-weight: 700 !important; color: var(--ink) !important;
             margin: 1.4rem 0 .6rem !important; line-height: 1.4 !important;
+        }
+        html.scn #main section > :is(h2, h3, h4, .part_ti, .hBk_ti):first-child,
+        html.scn #main .scn-dup + :is(h2, h3, h4, .part_ti, .hBk_ti),
+        html.scn #main section.part > .part_ti,
+        html.scn #main section.scn-card-sec > .part_ti {
+            margin-top: 0 !important; padding-top: 0 !important;
+        }
+        html.scn #main section.part,
+        html.scn #main section.scn-card-sec {
+            padding: 20px 28px !important;
         }
 
         /* Cartes Active Learning & Objectifs */
@@ -3564,35 +4057,91 @@
 
         const toc = shell.querySelector('#scn-toc');
         let tocN = 0;
-        const tocItems = $$('#main :is(h2.part_ti, h3.part_ti, h4.part_ti, .hBk_ti, article.collapsed > a .collapsed_ti):not(.scn-dup)', shell).map((el) => {
-            const target = el.matches('.collapsed_ti') ? el.closest('article.collapsed') : el;
-            if (!target.id) target.id = `scn-t-${++tocN}`;
-            const level = el.matches('h2') ? 1 : el.matches('h3.part_ti') ? 2 : 3;
-            return { text: clean(el.textContent), target, level };
-        }).filter((x) => x.text);
-
+        let tocItems = [];
         let tocLinks = [];
-        if (tocItems.length >= 1) {
-            toc.innerHTML = `<h4>Sur cette page</h4><ol>${tocItems.map((t, i) =>
-                `<li><a href="#${esc(t.target.id)}" class="l${t.level}" data-i="${i}">${esc(t.text)}</a></li>`).join('')}</ol>`;
-            tocLinks = $$('a', toc).map((a) => ({ a, el: tocItems[+a.dataset.i].target }));
-            toc.addEventListener('click', (e) => {
-                const a = e.target.closest('a[data-i]');
-                if (!a) return;
-                e.preventDefault();
-                const el = tocItems[+a.dataset.i].target;
-                const closed = el.matches('article.collapsed') && el.querySelector(':scope > a.collapsed_closed');
-                if (closed) closed.click();
-                el.scrollIntoView({ block: 'start' });
-            });
-        }
-        if (!tocLinks.length) { toc.remove(); shell.classList.add('no-toc'); }
+        let sideSecLinks = [];
 
+        const scrollToTocItem = (e) => {
+            const a = e.target.closest('a[data-i]');
+            if (!a) return;
+            e.preventDefault();
+            const item = tocItems[+a.dataset.i];
+            if (!item) return;
+            const el = item.target;
+            const closed = el.matches('article.collapsed') && el.querySelector(':scope > a.collapsed_closed');
+            if (closed) closed.click();
+            el.scrollIntoView({ block: 'start' });
+        };
+        toc.addEventListener('click', scrollToTocItem);
+
+        let lastTocKey = '';
+        const buildToc = () => {
+            const nextItems = $$('#main :is(h2.part_ti, h3.part_ti, h4.part_ti, .hBk_ti, .collapsed_ti):not(.scn-dup)', shell)
+                .filter((el) => !el.closest('.collapsed_co'))
+                .map((el) => {
+                const target = el.matches('.collapsed_ti') ? (el.closest('.collapsed, article, section') || el) : el;
+                if (!target.id) target.id = `scn-t-${++tocN}`;
+                const level = el.matches('h2') ? 1 : el.matches('h3.part_ti') ? 2 : 3;
+                return { text: clean(el.textContent), target, level };
+            }).filter((x) => x.text);
+
+            const nextKey = nextItems.map((t) => `${t.level}:${t.text}`).join('|');
+            if (nextKey === lastTocKey) return false;
+            lastTocKey = nextKey;
+            tocItems = nextItems;
+
+            tocLinks = [];
+            sideSecLinks = [];
+            if (tocItems.length >= 1) {
+                const tocListHtml = tocItems.map((t, i) =>
+                    `<li><a href="#${esc(t.target.id)}" class="l${t.level}" data-i="${i}">${esc(t.text)}</a></li>`).join('');
+                if (!toc.isConnected) shell.appendChild(toc);
+                shell.classList.remove('no-toc');
+                toc.innerHTML = `<h4>Sur cette page</h4><ol>${tocListHtml}</ol>`;
+                tocLinks = $$('a', toc).map((a) => ({ a, el: tocItems[+a.dataset.i].target }));
+
+                if (activeLi) {
+                    let sideSec = activeLi.querySelector('#outSec') || $('#outSec', shell);
+                    if (!sideSec) {
+                        sideSec = document.createElement('div');
+                        sideSec.id = 'outSec';
+                        activeLi.appendChild(sideSec);
+                    }
+                    const sideItems = tocItems.map((t, i) => ({ ...t, i })).filter((t) => t.level <= 2);
+                    const sideHtml = (sideItems.length ? sideItems : tocItems.map((t, i) => ({ ...t, i })))
+                        .map((t) => `<li><a href="#${esc(t.target.id)}" class="l${t.level}" data-i="${t.i}">${esc(t.text)}</a></li>`)
+                        .join('');
+                    sideSec.innerHTML = `<ul>${sideHtml}</ul>`;
+                    sideSecLinks = $$('a[data-i]', sideSec).map((a) => ({ a, el: tocItems[+a.dataset.i].target }));
+                    if (!sideSec.dataset.scnBound) {
+                        sideSec.dataset.scnBound = '1';
+                        sideSec.addEventListener('click', scrollToTocItem);
+                    }
+                }
+            } else {
+                toc.remove();
+                shell.classList.add('no-toc');
+            }
+            return true;
+        };
+
+        buildToc();
         removeClass('scn-loading');
-        setupInteractions(shell, toc, tocLinks, $, $$);
+        const refreshTocSpy = setupInteractions(shell, toc, () => tocLinks, $, $$, () => sideSecLinks);
+        const syncTocNow = () => { if (buildToc()) refreshTocSpy(); };
+        addEventListener('load', syncTocNow, { once: true });
+        setTimeout(syncTocNow, 300);
+        setTimeout(syncTocNow, 1000);
+        let tocMutTimer = null;
+        const tocObs = new MutationObserver(() => {
+            if (tocMutTimer) clearTimeout(tocMutTimer);
+            tocMutTimer = setTimeout(syncTocNow, 80);
+        });
+        tocObs.observe(main, { childList: true, subtree: true });
+        setTimeout(() => tocObs.disconnect(), 8000);
         }
 
-        function setupInteractions(shell, toc, tocLinks, $, $$) {
+        function setupInteractions(shell, toc, getTocLinks, $, $$, getCustomSecLinks = null) {
             $('#scn-theme')?.addEventListener('click', () => setTheme(!getHtml()?.classList.contains('scn-dark')));
 
         const toggleSide = () => {
@@ -3612,7 +4161,13 @@
         $('#scn-side')?.addEventListener('click', (e) => { if (e.target.closest('#outSec a, .outCat_lnk')) closeNav(); });
 
         const bar = $('#scn-progress');
-        const secLinks = $$('#outSec a[href^="#"]').map((a) => ({ a, el: document.getElementById(a.getAttribute('href').slice(1)) })).filter((x) => x.el);
+        const resolveTocLinks = () => (typeof getTocLinks === 'function' ? getTocLinks() : (getTocLinks || []));
+        const resolveSecLinks = () => {
+            const custom = typeof getCustomSecLinks === 'function' ? getCustomSecLinks() : getCustomSecLinks;
+            return (custom && custom.length)
+                ? custom
+                : $$('#outSec a[href^="#"]').map((a) => ({ a, el: document.getElementById(a.getAttribute('href').slice(1)) })).filter((x) => x.el);
+        };
         const spy = (links, limit) => {
             if (!links.length) return;
             let cur = links[0];
@@ -3626,8 +4181,8 @@
             ticking = false;
             const max = document.documentElement.scrollHeight - innerHeight;
             if (bar) bar.style.width = max > 0 ? `${Math.min(100, (scrollY / max) * 100)}%` : '0';
-            spy(secLinks, 120);
-            const cur = spy(tocLinks, 120);
+            spy(resolveSecLinks(), 120);
+            const cur = spy(resolveTocLinks(), 120);
             if (cur && toc && toc.isConnected) {
                 const r = cur.a.getBoundingClientRect(), tr = toc.getBoundingClientRect();
                 if (r.top < tr.top + 40 || r.bottom > tr.bottom - 20) toc.scrollTop += r.top - tr.top - tr.height / 3;
@@ -3636,6 +4191,7 @@
         addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
         addEventListener('resize', onScroll);
         onScroll();
+        return onScroll;
 
         addEventListener('keydown', (e) => {
             if (e.key === 'Escape') return closeNav();
